@@ -25,13 +25,13 @@ export default function Footer() {
 
           <Link
             href="#"
-            className="inline-flex items-center justify-center rounded-lg border border-white/30 px-6 py-3 text-sm font-medium"
+            className="inline-flex items-center justify-center rounded-lg border-2 border-white px-6 py-3 text-sm font-medium"
           >
             View Demo
           </Link>
         </div>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-[#D1D5DC]">
           No credit card required • Free 14-day trial • Cancel anytime
         </p>
       </div>
@@ -51,12 +51,12 @@ export default function Footer() {
                 <span>Monssel</span>
               </div>
 
-              <p className="mb-4 text-sm text-gray-400">
+              <p className="mb-4 text-sm text-[#D1D5DC]">
                 Simple business tool built for small business owners, not
                 accountants.
               </p>
 
-              <div className="flex gap-4 text-gray-400">
+              <div className="flex gap-4 text-[#D1D5DC]">
                 <Twitter className="h-4 w-4" />
                 <Linkedin className="h-4 w-4" />
                 <Instagram className="h-4 w-4" />
@@ -65,7 +65,7 @@ export default function Footer() {
 
             <div>
               <h4 className="mb-4 text-sm font-medium">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-[#D1D5DC]">
                 <li>
                   <Link href="#">Features</Link>
                 </li>
@@ -83,7 +83,7 @@ export default function Footer() {
 
             <div>
               <h4 className="mb-4 text-sm font-medium">Resources</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-[#D1D5DC]">
                 <li>
                   <Link href="#">Documentation</Link>
                 </li>
@@ -101,7 +101,7 @@ export default function Footer() {
 
             <div>
               <h4 className="mb-4 text-sm font-medium">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-[#D1D5DC]">
                 <li>
                   <Link href="#">About Us</Link>
                 </li>
@@ -121,7 +121,7 @@ export default function Footer() {
 
         <div className="">
           <div className="mx-auto max-w-6xl px-4 py-6">
-            <div className="flex flex-col gap-4 text-xs text-gray-500 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-4 text-xs text-[#D1D5DC] md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <p>© 2026</p>
 
