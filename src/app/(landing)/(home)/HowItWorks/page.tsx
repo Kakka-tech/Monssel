@@ -2,9 +2,9 @@ import Image from "next/image";
 
 export default function HowItWorksPage() {
   return (
-    <section className="w-full bg-[#fafafa]  py-20">
+    <section className="w-full bg-[#1E1F20]  py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="mb-12 text-center text-3xl font-semibold text-gray-900">
+        <h2 className="mb-12 text-center text-3xl font-semibold text-[#FAFAFA]">
           How it works
         </h2>
 
@@ -51,11 +51,11 @@ export default function HowItWorksPage() {
             </p>
 
             <Image
-              src="/images/add-product.png"
+              src="/images/record-sales.png"
               alt="Record sales"
               width={600}
               height={360}
-              className="w-full rounded-xl border border-gray-200 object-cover"
+              className="w-full"
             />
           </div>
 
@@ -73,11 +73,11 @@ export default function HowItWorksPage() {
             </p>
 
             <Image
-              src="/images/how-it-works-analytics.png"
+              src="/images/analytics.png"
               alt="Analytics dashboard"
               width={600}
               height={360}
-              className="w-full object-cover"
+              className="w-full"
             />
           </div>
         </div>
