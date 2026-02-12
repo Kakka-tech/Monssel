@@ -59,7 +59,7 @@ export default function HowItWorksPage() {
             />
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8">
+          <div className="rounded-2xl border border-gray-2 bg-white p-6 md:p-8">
             <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-black text-lg font-semibold text-white">
               3
             </div>
