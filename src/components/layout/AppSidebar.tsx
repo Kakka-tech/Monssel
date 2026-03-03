@@ -26,11 +26,7 @@ export default function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col">
-      <div className="h-16 flex items-center px-6 border-b border-neutral-200">
-        <span className="font-semibold text-lg">Monssel</span>
-      </div>
-
+    <aside className="w-64 bg-[#FAFAFA] flex flex-col">
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -42,8 +38,8 @@ export default function AppSidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
                 active
-                  ? "bg-neutral-100 text-neutral-900 font-medium"
-                  : "text-neutral-600 hover:bg-neutral-50"
+                  ? "bg-[#ECEDEE] text-neutral-900 font-medium"
+                  : "text-neutral-600 hover:bg-[#ECEDEE]"
               }`}
             >
               <Icon size={18} />

@@ -7,11 +7,11 @@ export default function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-neutral-50">
-      <AppSidebar />
+    <div className="flex flex-col h-screen bg-[#FFF]">
+      <AppHeader />
 
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <AppHeader />
+      <div className="flex flex-1 overflow-hidden">
+        <AppSidebar />
 
         <main className="flex-1 overflow-y-auto p-6">
           {children}
