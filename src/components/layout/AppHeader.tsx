@@ -14,60 +14,58 @@ export default function AppHeader() {
   const pathname = usePathname();
 
   const segments = pathname.split("/").filter(Boolean);
-  const isDashboardRoot =
-    segments.length === 1 && segments[0] === "dashboard";
+  const isDashboardRoot = segments.length === 1 && segments[0] === "dashboard";
 
   const currentPage =
-    segments.length > 0
-      ? formatTitle(segments[segments.length - 1])
-      : "Dashboard";
+    segments.length > 0 ?
+      formatTitle(segments[segments.length - 1])
+    : "Dashboard";
 
   return (
     <header className="h-16 w-full bg-white border-b border-[#E4E6E7] flex items-center">
-  <div className="w-64 px-6 flex items-center">
-    <Image
-      src="/icons/logo.png"
-      alt="Monssel Logo"
-      width={26}
-      height={26}
-      priority
-    />
-  </div>
+      <div className="w-16 sm:w-20 md:w-64 px-4 md:px-6 flex items-center">
+        <Image
+          src="/icons/logo.png"
+          alt="Monssel Logo"
+          width={26}
+          height={26}
+          priority
+        />
+      </div>
 
-  <div className="flex-1 px-6 flex items-center justify-between">
-    <div className="flex items-center gap-2 text-sm">
-      <PanelLeft size={20} className="text-neutral-400" />
+      <div className="flex-1 px-4 md:px-6 flex items-center justify-between min-w-0">
+        <div className="flex items-center gap-2 text-sm min-w-0">
+          <PanelLeft size={18} className="text-neutral-400 shrink-0" />
 
-      {isDashboardRoot ? (
-        <span className="font-medium text-neutral-900">
-          Dashboard
-        </span>
-      ) : (
-        <>
-          <span className="text-neutral-400">Dashboard</span>
-          <span className="text-neutral-400">/</span>
-          <span className="font-medium text-neutral-900">
-            {currentPage}
-          </span>
-        </>
-      )}
-    </div>
-
-    <div className="flex items-center gap-4">
-      <button aria-label="Notifications">
-        <Bell size={18} className="text-[#1E1F20]" />
-      </button>
-
-      <div className="text-sm text-right">
-        <div className="font-medium text-neutral-900">
-          Stephen Samson
+          <div className="flex items-center gap-2 truncate">
+            {isDashboardRoot ?
+              <span className="font-medium text-neutral-900 truncate">
+                Dashboard
+              </span>
+            : <>
+                <span className="text-neutral-400 hidden sm:inline">
+                  Dashboard
+                </span>
+                <span className="text-neutral-400 hidden sm:inline">/</span>
+                <span className="font-medium text-neutral-900 truncate">
+                  {currentPage}
+                </span>
+              </>
+            }
+          </div>
         </div>
-        <div className="text-neutral-500 text-xs">
-          stephen@gmail.com
+
+        <div className="flex items-center gap-3 md:gap-4 shrink-0">
+          <button aria-label="Notifications">
+            <Bell size={18} className="text-[#1E1F20]" />
+          </button>
+
+          <div className="text-sm text-right hidden sm:block">
+            <div className="font-medium text-neutral-900">Stephen Samson</div>
+            <div className="text-neutral-500 text-xs">stephen@gmail.com</div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</header>
+    </header>
   );
 }
