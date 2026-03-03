@@ -1,14 +1,14 @@
+"use client";
+
 import PageContainer from "@/components/layout/PageContainer";
+import DashboardOnboarding from "./components/DashboardOnboarding";
 
 export default function DashboardPage() {
+  const isSkipped = true;
+
   return (
     <PageContainer>
-      <div>
-        <h1 className="text-2xl font-semibold text-[#1E1F20]">Dashboard</h1>
-        <p className="text-sm text-[#707375]">
-          Overview of your sales and business performance
-        </p>
-      </div>
+      {isSkipped && <DashboardOnboarding />}
     </PageContainer>
   );
 }

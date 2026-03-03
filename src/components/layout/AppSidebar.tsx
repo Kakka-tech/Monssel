@@ -97,13 +97,13 @@ export default function AppSidebar() {
           <Link
             href="/settings"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 hover:bg-neutral-50"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 hover:bg-[#ECEDEE]"
           >
             <Settings size={18} />
             Settings
           </Link>
 
-          <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 hover:bg-neutral-50 w-full text-left">
+          <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 hover:bg-[#ECEDEE] w-full text-left">
             <LogOut size={18} />
             Log Out
           </button>
