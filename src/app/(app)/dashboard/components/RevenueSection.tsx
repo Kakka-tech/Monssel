@@ -20,7 +20,7 @@ const randomize = (base: number, variance: number) =>
 
 const weeklyData = Array.from({ length: 4 }).map((_, i) => ({
   label: `Week ${i + 1}`,
-  value: randomize(500 + i * 200, 150), 
+  value: randomize(500 + i * 200, 150),
 }));
 
 const currentMonth = today.toLocaleDateString("en-US", { month: "short" });
@@ -31,13 +31,13 @@ const monthlyData = Array.from({ length: 6 }).map((_, i) => {
 
   return {
     label: `${currentMonth} ${day}`,
-    value: randomize(1000 + i * 300, 300), 
+    value: randomize(1000 + i * 300, 300),
   };
 });
 
 const yearlyData = Array.from({ length: 5 }).map((_, i) => ({
   label: String(userStartYear + i),
-  value: randomize(3000 + i * 1500, 800), 
+  value: randomize(3000 + i * 1500, 800),
 }));
 
 export default function RevenueSection() {
@@ -64,15 +64,16 @@ export default function RevenueSection() {
   const trendColor = isPositive ? "#10B981" : "#EF4444";
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white border border-neutral-200 rounded-xl p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4 sm:gap-0">
         <div>
-          <h3 className="text-base font-semibold text-neutral-900">
+          <h3 className="text-base sm:text-lg font-semibold text-neutral-900">
             Revenue Flow
           </h3>
 
-          <div className="flex items-center gap-4 mt-2">
-            <p className="text-2xl font-semibold text-neutral-900">
+          <div className="flex items-center gap-3 mt-2 flex-wrap sm:flex-nowrap">
+            <p className="text-xl sm:text-2xl font-semibold text-neutral-900">
               ${currentData.reduce((a, b) => a + b.value, 0).toLocaleString()}
             </p>
 
@@ -87,7 +88,8 @@ export default function RevenueSection() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-sm">
+        {/* Range Buttons */}
+        <div className="flex flex-wrap gap-2 sm:gap-3 text-sm">
           {(["weekly", "monthly", "yearly"] as RangeType[]).map((item) => {
             const isActive = range === item;
 
@@ -95,10 +97,10 @@ export default function RevenueSection() {
               <button
                 key={item}
                 onClick={() => setRange(item)}
-                className={`px-4 py-1.5 rounded-md transition-all duration-200 ${
+                className={`px-3 sm:px-4 py-1.5 rounded-md transition-all duration-200 ${
                   isActive
                     ? "bg-neutral-900 text-white shadow-sm"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                    : "bg-neutral-100 border border-[#E4E6E7] text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
                 {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -108,7 +110,8 @@ export default function RevenueSection() {
         </div>
       </div>
 
-      <div className="h-64">
+      {/* Chart */}
+      <div className="h-48 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={currentData}>
             <defs>
@@ -129,7 +132,7 @@ export default function RevenueSection() {
               dataKey="label"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#9CA3AF", fontSize: 12 }}
+              tick={{ fill: "#9CA3AF", fontSize: 10 }}
             />
 
             <Area
@@ -140,7 +143,7 @@ export default function RevenueSection() {
               fillOpacity={1}
               fill="url(#colorRevenue)"
               activeDot={{
-                r: 6,
+                r: 5,
                 stroke: trendColor,
                 strokeWidth: 3,
                 fill: "#ffffff",
