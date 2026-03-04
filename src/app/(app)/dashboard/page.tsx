@@ -1,14 +1,16 @@
 "use client";
 
 import PageContainer from "@/components/layout/PageContainer";
-import DashboardOnboarding from "./components/DashboardOnboarding";
+// import DashboardOnboarding from "./components/DashboardOnboarding";
+import DashboardFull from "./components/DashboardFull";
 
 export default function DashboardPage() {
-  const isSkipped = true;
+  // const isSkipped = true;
+  const isCompleted = true;
 
   return (
     <PageContainer>
-      {isSkipped && <DashboardOnboarding />}
+      {isCompleted && <DashboardFull />}
     </PageContainer>
   );
 }

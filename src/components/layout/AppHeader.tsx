@@ -35,11 +35,11 @@ export default function AppHeader() {
 
       <div className="flex-1 px-4 md:px-6 flex items-center justify-between min-w-0">
         <div className="flex items-center gap-2 text-sm min-w-0">
-          <PanelLeft size={18} className="text-neutral-400 shrink-0" />
+          <PanelLeft size={18} className="text-[#707375] shrink-0" />
 
           <div className="flex items-center gap-2 truncate">
             {isDashboardRoot ?
-              <span className="font-medium text-neutral-900 truncate">
+              <span className="font-medium text-[#707375] truncate">
                 Dashboard
               </span>
             : <>

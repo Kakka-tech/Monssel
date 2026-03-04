@@ -1,0 +1,154 @@
+"use client";
+
+import { useState } from "react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+
+type RangeType = "weekly" | "monthly" | "yearly";
+
+const today = new Date();
+const userStartYear = 2026;
+
+const randomize = (base: number, variance: number) =>
+  base + Math.floor(Math.random() * variance - variance / 2);
+
+const weeklyData = Array.from({ length: 4 }).map((_, i) => ({
+  label: `Week ${i + 1}`,
+  value: randomize(500 + i * 200, 150), 
+}));
+
+const currentMonth = today.toLocaleDateString("en-US", { month: "short" });
+const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+
+const monthlyData = Array.from({ length: 6 }).map((_, i) => {
+  const day = Math.floor((daysInMonth / 5) * i) + 1;
+
+  return {
+    label: `${currentMonth} ${day}`,
+    value: randomize(1000 + i * 300, 300), 
+  };
+});
+
+const yearlyData = Array.from({ length: 5 }).map((_, i) => ({
+  label: String(userStartYear + i),
+  value: randomize(3000 + i * 1500, 800), 
+}));
+
+export default function RevenueSection() {
+  const [range, setRange] = useState<RangeType>("monthly");
+
+  const getData = () => {
+    if (range === "weekly") return weeklyData;
+    if (range === "yearly") return yearlyData;
+    return monthlyData;
+  };
+
+  const currentData = getData();
+
+  const firstValue = currentData[0]?.value ?? 0;
+  const lastValue = currentData[currentData.length - 1]?.value ?? 0;
+
+  const isPositive = lastValue >= firstValue;
+
+  const percentageChange =
+    firstValue === 0
+      ? 0
+      : (((lastValue - firstValue) / firstValue) * 100).toFixed(1);
+
+  const trendColor = isPositive ? "#10B981" : "#EF4444";
+
+  return (
+    <div className="bg-white border border-neutral-200 rounded-xl p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-base font-semibold text-neutral-900">
+            Revenue Flow
+          </h3>
+
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-2xl font-semibold text-neutral-900">
+              ${currentData.reduce((a, b) => a + b.value, 0).toLocaleString()}
+            </p>
+
+            <span
+              className={`flex items-center gap-1 text-sm font-medium ${
+                isPositive ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              {Math.abs(Number(percentageChange))}%
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 text-sm">
+          {(["weekly", "monthly", "yearly"] as RangeType[]).map((item) => {
+            const isActive = range === item;
+
+            return (
+              <button
+                key={item}
+                onClick={() => setRange(item)}
+                className={`px-4 py-1.5 rounded-md transition-all duration-200 ${
+                  isActive
+                    ? "bg-neutral-900 text-white shadow-sm"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+              >
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={currentData}>
+            <defs>
+              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={trendColor} stopOpacity={0.35} />
+                <stop offset="95%" stopColor={trendColor} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+
+            <CartesianGrid
+              strokeDasharray="3 6"
+              vertical
+              horizontal={false}
+              stroke="#E5E7EB"
+            />
+
+            <XAxis
+              dataKey="label"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9CA3AF", fontSize: 12 }}
+            />
+
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={trendColor}
+              strokeWidth={2}
+              fillOpacity={1}
+              fill="url(#colorRevenue)"
+              activeDot={{
+                r: 6,
+                stroke: trendColor,
+                strokeWidth: 3,
+                fill: "#ffffff",
+              }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
