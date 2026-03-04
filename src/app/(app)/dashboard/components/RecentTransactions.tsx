@@ -38,7 +38,7 @@ export default function RecentTransactions() {
         ))}
       </div>
 
-      <button className="mt-6 bg-neutral-900 text-[#FFFFFF] py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-800 transition">
+      <button className="mt-6 bg-[#11181C] text-[#FFFFFF] py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-800 transition">
         View All Transactions
       </button>
     </div>
