@@ -6,6 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import clsx from "clsx"; // for conditional classes
 
 export default function SignUp() {
   const [formLoading, setFormLoading] = useState(false);
@@ -21,17 +22,23 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
+  const [passwordError, setPasswordError] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setPasswordError(true);
+
+      // Remove shake effect after animation
+      setTimeout(() => setPasswordError(false), 500);
       return;
     }
+
+    setPasswordError(false);
     setFormLoading(true);
 
     setTimeout(() => {
@@ -71,6 +78,7 @@ export default function SignUp() {
         <p className="text-xs text-neutral-500">Start your journey with us</p>
       </div>
 
+      {/* Social Buttons */}
       <button
         type="button"
         onClick={() => handleSocialSignup("Google")}
@@ -97,6 +105,7 @@ export default function SignUp() {
         <hr className="flex-1 border-neutral-200" />
       </div>
 
+      {/* Form Fields */}
       <div className="space-y-3">
         <input
           type="text"
@@ -117,6 +126,7 @@ export default function SignUp() {
           required
         />
 
+        {/* Password */}
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
@@ -124,7 +134,10 @@ export default function SignUp() {
             placeholder="Password"
             value={formData.password}
             onChange={handleInputChange}
-            className="w-full text-black/50 placeholder:text-[#1E1F2040] rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-[#F2F2F2]"
+            className={clsx(
+              "w-full text-black/50 placeholder:text-[#1E1F2040] rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-[#F2F2F2]",
+              passwordError && "animate-shake border-red-500"
+            )}
             required
           />
           <button
@@ -136,6 +149,7 @@ export default function SignUp() {
           </button>
         </div>
 
+        {/* Confirm Password */}
         <div className="relative">
           <input
             type={showConfirmPassword ? "text" : "password"}
@@ -143,7 +157,10 @@ export default function SignUp() {
             placeholder="Confirm Password"
             value={formData.confirmPassword}
             onChange={handleInputChange}
-            className="w-full text-black/50 placeholder:text-[#1E1F2040] rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-[#F2F2F2]"
+            className={clsx(
+              "w-full text-black/50 placeholder:text-[#1E1F2040] rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-[#F2F2F2]",
+              passwordError && "animate-shake border-red-500"
+            )}
             required
           />
           <button
@@ -154,6 +171,11 @@ export default function SignUp() {
             {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
+
+        {/* Password Error Message */}
+        {passwordError && (
+          <p className="text-red-500 text-xs">Passwords do not match</p>
+        )}
       </div>
 
       <label className="flex items-start gap-2 text-xs text-neutral-500">
