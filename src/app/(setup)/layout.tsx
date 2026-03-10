@@ -15,7 +15,7 @@ export default function SetupLayout({
             width={540}
             height={660}
             priority
-            className="h-140 w-auto rounded-3xl object-cove"
+            className="h-140.5 w-auto rounded-3xl object-cove"
           />
         </div>
 
@@ -23,4 +23,5 @@ export default function SetupLayout({
       </div>
     </div>
   );
+
 }
