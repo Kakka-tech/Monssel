@@ -65,7 +65,6 @@ export default function RevenueSection() {
 
   return (
     <div className="bg-white border border-neutral-200 rounded-xl p-4 sm:p-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4 sm:gap-0">
         <div>
           <h3 className="text-base sm:text-lg font-semibold text-neutral-900">
@@ -88,7 +87,6 @@ export default function RevenueSection() {
           </div>
         </div>
 
-        {/* Range Buttons */}
         <div className="flex flex-wrap gap-2 sm:gap-3 text-sm">
           {(["weekly", "monthly", "yearly"] as RangeType[]).map((item) => {
             const isActive = range === item;
@@ -110,7 +108,6 @@ export default function RevenueSection() {
         </div>
       </div>
 
-      {/* Chart */}
       <div className="h-48 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={currentData}>
