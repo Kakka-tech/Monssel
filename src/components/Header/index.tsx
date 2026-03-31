@@ -7,7 +7,6 @@ export default function Header() {
   return (
     <header className="w-full bg-[#fafafa]">
       <div className="mx-10 grid h-16 max-w-7xl grid-cols-3 items-center px-6">
-        {/* Left: Logo */}
         <div className="flex items-center">
           <Link href="/">
             <Image
@@ -21,7 +20,6 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Center: Navigation */}
         <nav className="hidden md:flex items-center justify-center gap-8">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/about">About</NavLink>
@@ -30,7 +28,6 @@ export default function Header() {
           <NavLink href="/pricing">Pricing</NavLink>
         </nav>
 
-        {/* Right: Actions */}
         <div className="flex items-center justify-end gap-4">
           <Link
             href="/login"
