@@ -1,9 +1,10 @@
 "use client";
-import { useRouter } from "next/navigation";
+
+import { useState } from "react";
 import Button from "@/components/ui/Button";
 
-export default function WelcomeStepOne() {
-  const router = useRouter();
+export default function WelcomeStepOne({ onNext }: { onNext: () => void }) {
+  const [value, setValue] = useState("");
 
   return (
     <div className="space-y-5">
@@ -29,21 +30,23 @@ export default function WelcomeStepOne() {
 
         <input
           type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
           placeholder="e.g., Fashion items, Electronics, Food..."
-          className="w-full border-[0.667] border-[#ECEDEE] rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-black placeholder:text-[#0A0A0A80 text-[#1E1F20]"
+          className="w-full border border-[#ECEDEE] rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-black placeholder:text-[#0A0A0A80] text-[#1E1F20]"
         />
       </div>
 
       <div className="flex gap-3">
         <Button
-          onClick={() => router.push("/welcome/step-2")}
+          onClick={onNext}
           className="flex-1 bg-[#1E1F20]! text-white! py-2 rounded-lg"
         >
           Continue
         </Button>
 
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={onNext}
           className="px-4 py-2 border-2 border-[#ECEDEE] rounded-lg text-[#707375]"
         >
           Skip
