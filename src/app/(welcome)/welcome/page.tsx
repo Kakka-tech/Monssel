@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import WelcomeStepOne from "../components/WelcomeStepOne";
 import WelcomeStepTwo from "../components/WelcomeStepTwo";
 import WelcomeStepThree from "../components/WelcomeStepThree";
 
 export default function WelcomePage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [stockPreference, setStockPreference] = useState<"yes" | "no" | null>(null);
   const [paymentPreference, setPaymentPreference] = useState<"yes" | "skip" | null>(null);
@@ -13,6 +15,7 @@ export default function WelcomePage() {
   const handleComplete = () => {
     console.log("Stock:", stockPreference);
     console.log("Payment:", paymentPreference);
+    router.push("/add-product");
   };
 
   return (

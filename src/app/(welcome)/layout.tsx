@@ -23,7 +23,7 @@ export default function WelcomeLayout({
 
         <div className="hidden md:block shrink-0 md:-ml-17 z-10">
           <Image
-            src="/images/welcome-illustration.png"
+            src="/illustrations/welcome-illustration.png"
             alt="Welcome"
             width={480} 
             height={480}
