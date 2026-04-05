@@ -18,12 +18,12 @@ export default function HeroSection() {
           </p>
 
           <div className="mt-6 flex items-center gap-3">
-            <Link href="/signup">
+            <Link href="/auth/signup">
               <Button>Get Started</Button>
             </Link>
 
             <Link
-              href="/login"
+              href="/auth//login"
               className="text-sm text-gray-600 hover:text-black"
             >
               Log In

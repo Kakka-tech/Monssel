@@ -30,13 +30,13 @@ export default function Header() {
 
         <div className="flex items-center justify-end gap-4">
           <Link
-            href="/login"
+            href="/auth/login"
             className="text-sm text-gray-600 hover:text-black transition-colors"
           >
             Log in
           </Link>
 
-          <Link href="/signup">
+          <Link href="/auth/signup">
             <Button className="flex-none">Sign Up</Button>
           </Link>
         </div>

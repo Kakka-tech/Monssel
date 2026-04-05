@@ -6,7 +6,7 @@ export default function SetupLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-screen bg-[#FAFAFA] flex items-center justify-center px-6">
+    <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-6xl flex items-center justify-center gap-20">
         <div className="hidden lg:flex shrink-0">
           <Image
@@ -15,13 +15,12 @@ export default function SetupLayout({
             width={540}
             height={660}
             priority
-            className="h-140.5 w-auto rounded-3xl object-cove"
+            className="h-165 w-auto rounded-3xl object-cover" 
           />
         </div>
 
-        <div className="w-full max-w-md flex items-center">{children}</div>
+        <div className="w-full max-w-md">{children}</div>
       </div>
     </div>
   );
-
 }
