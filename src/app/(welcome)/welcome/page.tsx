@@ -3,10 +3,17 @@
 import { useState } from "react";
 import WelcomeStepOne from "../components/WelcomeStepOne";
 import WelcomeStepTwo from "../components/WelcomeStepTwo";
+import WelcomeStepThree from "../components/WelcomeStepThree";
 
 export default function WelcomePage() {
   const [step, setStep] = useState(1);
   const [stockPreference, setStockPreference] = useState<"yes" | "no" | null>(null);
+  const [paymentPreference, setPaymentPreference] = useState<"yes" | "skip" | null>(null);
+
+  const handleComplete = () => {
+    console.log("Stock:", stockPreference);
+    console.log("Payment:", paymentPreference);
+  };
 
   return (
     <>
@@ -21,9 +28,16 @@ export default function WelcomePage() {
           selected={stockPreference}
           setSelected={setStockPreference}
           onBack={() => setStep(1)}
-          onNext={() => {
-            console.log("Stock:", stockPreference);
-          }}
+          onNext={() => setStep(3)}
+        />
+      )}
+
+      {step === 3 && (
+        <WelcomeStepThree
+          selected={paymentPreference}
+          setSelected={setPaymentPreference}
+          onBack={() => setStep(2)}
+          onComplete={handleComplete}
         />
       )}
     </>

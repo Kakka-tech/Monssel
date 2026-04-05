@@ -120,7 +120,7 @@ export default function WelcomeStepTwo({
           disabled={!selected}
           onClick={onNext}
           className={`flex-1 py-2 rounded-lg text-white
-            ${selected ? "bg-black" : "bg-gray-300 cursor-not-allowed"}`}
+            ${selected ? "bg-black" : "bg-[#0A0A0A80] cursor-not-allowed"}`}
         >
           Continue
         </button>
