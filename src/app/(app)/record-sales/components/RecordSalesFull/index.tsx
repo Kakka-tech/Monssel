@@ -122,19 +122,19 @@ export default function RecordSalesFull() {
 
       <div className="flex gap-6 items-start">
         <div className="flex-1 min-w-0 space-y-5">
-          <div className="border border-gray-200 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-medium text-gray-700">
+          <div className="border border-[#ECEDEE] rounded-xl p-4 space-y-3">
+            <p className="text-sm font-medium text-[#1E1F20]">
               Select Product <span className="text-red-500">*</span>
             </p>
 
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#707375]" />
               <input
                 type="text"
                 placeholder="Search products..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition text-[#1E1F20] placeholder:text-[#1E1F20]/40"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-[#ECEDEE] rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-[#0A0A0A]/50 transition text-[#1E1F20] placeholder:text-[#1E1F20]/40"
               />
             </div>
 
@@ -150,7 +150,7 @@ export default function RecordSalesFull() {
                   disabled={product.stock === 0}
                   className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
                     selectedProduct?.id === product.id ?
-                      "border-gray-900 bg-white shadow-sm"
+                      "border-[#155DFC] border-2 bg-[#EFF6FF] shadow-sm"
                     : "border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white"
                   } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
