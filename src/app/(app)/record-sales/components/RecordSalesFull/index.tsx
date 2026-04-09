@@ -57,11 +57,11 @@ export default function RecordSalesFull() {
   };
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto px-4 md:px-0">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Record Sale</h1>
 
-      <div className="flex gap-6 items-start">
-        <div className="flex-1 min-w-0 space-y-5">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="w-full flex-1 min-w-0 space-y-5">
           <ProductSelector
             products={MOCK_PRODUCTS}
             selectedProduct={selectedProduct}

@@ -2,6 +2,7 @@ import { Search } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Product } from "../types";
 import InventoryRow from "../components/InventoryRow";
+import InventoryCard from "../components/InventoryCard";
 
 interface InventoryTableProps {
   products: Product[];
@@ -22,7 +23,7 @@ export default function InventoryTable({ products, onEdit, onAddStock }: Invento
 
   return (
     <div className="space-y-4">
-      <div className="relative max-w-xs">
+      <div className="relative w-full sm:max-w-xs">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#707375]" />
         <input
           type="text"
@@ -34,27 +35,40 @@ export default function InventoryTable({ products, onEdit, onAddStock }: Invento
       </div>
 
       <div className="border border-[#ECEDEE] rounded-xl overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-[#ECEDEE]">
-              <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Product</th>
-              <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Status</th>
-              <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Stock</th>
-              <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Price</th>
-              <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((product) => (
-              <InventoryRow
-                key={product.id}
-                product={product}
-                onEdit={onEdit}
-                onAddStock={onAddStock}
-              />
-            ))}
-          </tbody>
-        </table>
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full min-w-150">
+            <thead>
+              <tr className="bg-gray-50 border-b border-[#ECEDEE]">
+                <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Product</th>
+                <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Status</th>
+                <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Stock</th>
+                <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Price</th>
+                <th className="text-left text-xs font-medium text-[#707375] px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#ECEDEE]">
+              {filtered.map((product) => (
+                <InventoryRow
+                  key={product.id}
+                  product={product}
+                  onEdit={onEdit}
+                  onAddStock={onAddStock}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="md:hidden divide-y divide-[#ECEDEE]">
+          {filtered.map((product) => (
+            <InventoryCard
+              key={product.id}
+              product={product}
+              onEdit={onEdit}
+              onAddStock={onAddStock}
+            />
+          ))}
+        </div>
 
         {filtered.length === 0 && (
           <div className="py-12 text-center text-sm text-gray-400">

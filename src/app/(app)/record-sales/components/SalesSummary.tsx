@@ -25,8 +25,8 @@ export default function SaleSummary({
   onCancel,
 }: SaleSummaryProps) {
   return (
-    <div className="w-64 shrink-0 space-y-4">
-      <div className="border border-gray-200 rounded-xl p-5 space-y-4">
+    <div className="w-full lg:w-64 shrink-0 space-y-4">
+      <div className="border border-gray-200 rounded-xl p-5 space-y-4 bg-white">
         <p className="text-sm font-semibold text-gray-900">Summary</p>
 
         <div className="space-y-2.5 text-sm">
@@ -89,7 +89,7 @@ export default function SaleSummary({
                 <p className="text-xs text-gray-400">{sale.date}</p>
               </div>
               <span className="text-xs font-semibold text-gray-700 shrink-0">
-                ${sale.total}
+                ${sale.total.toFixed(2)}
               </span>
             </div>
           ))}
