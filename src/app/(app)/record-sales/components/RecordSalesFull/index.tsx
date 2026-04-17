@@ -15,7 +15,7 @@ const MOCK_PRODUCTS: Product[] = [
 const MOCK_RECENT_SALES: RecentSale[] = [
   { id: "s1", productName: "Nike Air Max", quantity: 2, total: 200, date: "Today, 2:30 PM" },
   { id: "s2", productName: "Jordan 1 Retro", quantity: 1, total: 250, date: "Today, 11:00 AM" },
-  { id: "s3", productName: "Adidas Ultra Boost", quantity: 3, total: 540, date: "Yesterday, 4:23 PM" },
+  { id: "s3", productName: "Adidas Ultra Boost", quantity: 3, total: 540, date: "Yesterday, 4:30 PM" },
 ];
 
 export default function RecordSalesFull() {
