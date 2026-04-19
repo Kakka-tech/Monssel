@@ -24,7 +24,6 @@ export default function DisplaySection() {
       title="Display Preferences"
       description="Customize your app appearance"
     >
-      {/* Theme toggle */}
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-[#1E1F20]">Theme</label>
         <p className="text-xs text-[#707375]">Light mode is selected by default</p>
@@ -45,7 +44,6 @@ export default function DisplaySection() {
         </div>
       </div>
 
-      {/* Layout */}
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-[#1E1F20]">Dashboard Layout</label>
         <div className="grid grid-cols-3 gap-2">

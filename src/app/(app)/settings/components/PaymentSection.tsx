@@ -43,7 +43,6 @@ export default function PaymentSection() {
                 : "border-[#ECEDEE] bg-white"
             }`}
           >
-            {/* Disconnect X */}
             {provider.connected && (
               <button
                 onClick={() => disconnect(provider.id)}
@@ -54,7 +53,6 @@ export default function PaymentSection() {
               </button>
             )}
 
-            {/* Provider info */}
             <div className="flex items-center gap-2">
               <span className="text-xl">{provider.icon}</span>
               <span className="text-sm font-semibold text-[#1E1F20]">{provider.name}</span>

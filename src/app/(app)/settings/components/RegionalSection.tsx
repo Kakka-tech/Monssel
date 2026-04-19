@@ -58,20 +58,48 @@ export default function RegionalSection() {
       description="Set how the app displays your regional preference"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <SettingsSelect label="Default Currency" value={form.defaultCurrency} onChange={set("defaultCurrency")} options={CURRENCIES} required />
-        <SettingsSelect label="Timezone" value={form.timezone} onChange={set("timezone")} options={TIMEZONES} required />
-        <SettingsSelect label="Date Format" value={form.dateFormat} onChange={set("dateFormat")} options={DATE_FORMATS} required />
-        <SettingsSelect label="Number Format" value={form.numberFormat} onChange={set("numberFormat")} options={NUMBER_FORMATS} required />
+        <SettingsSelect
+          label="Default Currency"
+          value={form.defaultCurrency}
+          onChange={set("defaultCurrency")}
+          options={CURRENCIES}
+          required
+        />
+        <SettingsSelect
+          label="Timezone"
+          value={form.timezone}
+          onChange={set("timezone")}
+          options={TIMEZONES}
+          required
+        />
+        <SettingsSelect
+          label="Date Format"
+          value={form.dateFormat}
+          onChange={set("dateFormat")}
+          options={DATE_FORMATS}
+          required
+        />
+        <SettingsSelect
+          label="Number Format"
+          value={form.numberFormat}
+          onChange={set("numberFormat")}
+          options={NUMBER_FORMATS}
+          required
+        />
       </div>
 
-      {/* Tip */}
       <div className="border border-blue-100 rounded-lg p-3 bg-blue-50">
         <p className="text-xs text-blue-600">
-          💡 These settings will apply to all transactions, reports, and invoices across your account.
+          💡 These settings will apply to all transactions, reports, and
+          invoices across your account.
         </p>
       </div>
 
-      <SaveBar onSave={handleSave} onCancel={() => setForm(DEFAULTS)} saving={saving} />
+      <SaveBar
+        onSave={handleSave}
+        onCancel={() => setForm(DEFAULTS)}
+        saving={saving}
+      />
     </SettingsSection>
   );
 }

@@ -59,7 +59,6 @@ export default function NotificationsSection() {
         ))}
       </div>
 
-      {/* Tip */}
       <div className="border border-amber-200 rounded-lg p-3 bg-amber-50">
         <p className="text-xs text-amber-700">
           💡 Quick Tip: Turn off all notifications for busy nights, or customize when alerts matter most to you.
