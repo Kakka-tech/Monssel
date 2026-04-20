@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { CreditCard } from "lucide-react";
 import { X } from "lucide-react";
 import { PaymentProvider } from "../types";
 import SettingsSection from "./SettingsSection";
 
 const MOCK_PROVIDERS: PaymentProvider[] = [
-  { id: "paystack",   name: "Paystack",   icon: "💳", connected: true,  accountName: "stephen@gmail.com" },
-  { id: "flutterwave",name: "Flutterwave",icon: "🦋", connected: false },
+  {
+    id: "paystack",
+    name: "Paystack",
+    icon: "💳",
+    connected: true,
+    accountName: "stephen@gmail.com",
+  },
+  { id: "flutterwave", name: "Flutterwave", icon: "🦋", connected: false },
 ];
 
 export default function PaymentSection() {
@@ -16,20 +23,24 @@ export default function PaymentSection() {
   const disconnect = (id: string) =>
     setProviders((p) =>
       p.map((prov) =>
-        prov.id === id ? { ...prov, connected: false, accountName: undefined } : prov,
+        prov.id === id ?
+          { ...prov, connected: false, accountName: undefined }
+        : prov,
       ),
     );
 
   const connect = (id: string) =>
     setProviders((p) =>
       p.map((prov) =>
-        prov.id === id ? { ...prov, connected: true, accountName: "stephen@gmail.com" } : prov,
+        prov.id === id ?
+          { ...prov, connected: true, accountName: "stephen@gmail.com" }
+        : prov,
       ),
     );
 
   return (
     <SettingsSection
-      index="E"
+      icon={<CreditCard className="w-4 h-4" />}
       title="Payment Providers"
       description="Connect your payment gateways"
     >
@@ -38,9 +49,9 @@ export default function PaymentSection() {
           <div
             key={provider.id}
             className={`relative rounded-xl border p-4 space-y-3 ${
-              provider.connected
-                ? "border-green-200 bg-green-50"
-                : "border-[#ECEDEE] bg-white"
+              provider.connected ?
+                "border-green-200 bg-green-50"
+              : "border-[#ECEDEE] bg-white"
             }`}
           >
             {provider.connected && (
@@ -55,10 +66,12 @@ export default function PaymentSection() {
 
             <div className="flex items-center gap-2">
               <span className="text-xl">{provider.icon}</span>
-              <span className="text-sm font-semibold text-[#1E1F20]">{provider.name}</span>
+              <span className="text-sm font-semibold text-[#1E1F20]">
+                {provider.name}
+              </span>
             </div>
 
-            {provider.connected ? (
+            {provider.connected ?
               <>
                 <p className="text-xs text-[#707375]">
                   {provider.accountName ?? "Connected"}
@@ -67,8 +80,7 @@ export default function PaymentSection() {
                   Connected
                 </span>
               </>
-            ) : (
-              <>
+            : <>
                 <p className="text-xs text-[#707375]">Not connected</p>
                 <button
                   onClick={() => connect(provider.id)}
@@ -77,7 +89,7 @@ export default function PaymentSection() {
                   Connect {provider.name}
                 </button>
               </>
-            )}
+            }
           </div>
         ))}
       </div>

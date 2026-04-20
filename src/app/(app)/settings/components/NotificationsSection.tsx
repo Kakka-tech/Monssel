@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { NotificationSettings } from "../types";
+import { Bell } from "lucide-react";
 import SettingsSection from "./SettingsSection";
 import Toggle from "./Toggle";
 
@@ -18,11 +19,31 @@ const NOTIFICATION_ITEMS: {
   label: string;
   description: string;
 }[] = [
-  { key: "emailNotifications",   label: "Email Notifications",   description: "Receive updates via email" },
-  { key: "lowStockAlerts",       label: "Low Stock Alerts",       description: "Get notified when inventory is low" },
-  { key: "expenseNotifications", label: "Expense Notifications",  description: "Track expense submissions" },
-  { key: "weeklyReports",        label: "Weekly Reports",         description: "Receive weekly business summary" },
-  { key: "marketingEmails",      label: "Marketing Emails",       description: "Promotions and product updates" },
+  {
+    key: "emailNotifications",
+    label: "Email Notifications",
+    description: "Receive updates via email",
+  },
+  {
+    key: "lowStockAlerts",
+    label: "Low Stock Alerts",
+    description: "Get notified when inventory is low",
+  },
+  {
+    key: "expenseNotifications",
+    label: "Expense Notifications",
+    description: "Track expense submissions",
+  },
+  {
+    key: "weeklyReports",
+    label: "Weekly Reports",
+    description: "Receive weekly business summary",
+  },
+  {
+    key: "marketingEmails",
+    label: "Marketing Emails",
+    description: "Promotions and product updates",
+  },
 ];
 
 export default function NotificationsSection() {
@@ -40,7 +61,7 @@ export default function NotificationsSection() {
 
   return (
     <SettingsSection
-      index="D"
+      icon={<Bell className="w-4 h-4" />}
       title="Notifications"
       description="Manage your notification preferences"
     >
@@ -54,14 +75,19 @@ export default function NotificationsSection() {
               <p className="text-sm font-medium text-[#1E1F20]">{label}</p>
               <p className="text-xs text-[#707375]">{description}</p>
             </div>
-            <Toggle enabled={form[key]} onChange={() => toggle(key)} label={label} />
+            <Toggle
+              enabled={form[key]}
+              onChange={() => toggle(key)}
+              label={label}
+            />
           </div>
         ))}
       </div>
 
       <div className="border border-amber-200 rounded-lg p-3 bg-amber-50">
         <p className="text-xs text-amber-700">
-          💡 Quick Tip: Turn off all notifications for busy nights, or customize when alerts matter most to you.
+          💡 Quick Tip: Turn off all notifications for busy nights, or customize
+          when alerts matter most to you.
         </p>
       </div>
 

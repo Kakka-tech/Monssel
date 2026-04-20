@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BusinessInfo } from "../types";
+import { User } from "lucide-react";
 import SettingsSection from "./SettingsSection";
 import SettingsInput from "./SettingsInput";
 import SaveBar from "./SaveBar";
@@ -29,7 +30,7 @@ export default function BusinessInfoSection() {
 
   return (
     <SettingsSection
-      index="A"
+      icon={<User className="w-4 h-4" />}
       title="Business Information"
       description="Provide core business details below"
     >

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RegionalSettings } from "../types";
+import { Globe } from "lucide-react";
 import SettingsSection from "./SettingsSection";
 import SettingsSelect from "./SettingsSelect";
 import SaveBar from "./SaveBar";
@@ -53,7 +54,7 @@ export default function RegionalSection() {
 
   return (
     <SettingsSection
-      index="B"
+      icon={<Globe className="w-4 h-4" />}
       title="Currency & Regional"
       description="Set how the app displays your regional preference"
     >
@@ -88,6 +89,7 @@ export default function RegionalSection() {
         />
       </div>
 
+      {/* Tip */}
       <div className="border border-blue-100 rounded-lg p-3 bg-blue-50">
         <p className="text-xs text-blue-600">
           💡 These settings will apply to all transactions, reports, and
