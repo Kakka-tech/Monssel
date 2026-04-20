@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { BusinessInfo } from "../types";
 import { User } from "lucide-react";
+import { BusinessInfo } from "../types";
 import SettingsSection from "./SettingsSection";
 import SettingsInput from "./SettingsInput";
+import PhoneInput from "./PhoneInput";
 import SaveBar from "./SaveBar";
 
 const DEFAULTS: BusinessInfo = {
@@ -48,12 +49,9 @@ export default function BusinessInfoSection() {
           onChange={set("businessEmail")}
           type="email"
         />
-        <SettingsInput
-          label="Phone Number"
-          placeholder="+234 900 000 0000"
+        <PhoneInput
           value={form.phoneNumber}
           onChange={set("phoneNumber")}
-          type="tel"
         />
         <SettingsInput
           label="Tax ID / Registration Number"
