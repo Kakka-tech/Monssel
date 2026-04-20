@@ -79,7 +79,7 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
           >
             <h2 className="text-base font-semibold text-[#1E1F20]">Log Out</h2>
             <p className="text-sm text-[#707375]">
-              Are you sure you want to log out? You&appos;ll need to sign in
+              Are you sure you want to log out? You&apos;ll need to sign in
               again to access your account.
             </p>
           </motion.div>
