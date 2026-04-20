@@ -11,6 +11,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "clsx": "^2.1.1",
+    "country-data": "^0.0.31",
     "google-fonts": "^1.0.0",
     "lucide-react": "^0.563.0",
     "next": "16.1.4",
