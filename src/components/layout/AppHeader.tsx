@@ -7,7 +7,7 @@ import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import NotificationPanel from "./NotificationPanel";
 
-const UNREAD_COUNT = 3; // TODO: replace with real count from your data
+const UNREAD_COUNT = 3;
 
 function formatTitle(segment: string) {
   return segment
@@ -27,7 +27,7 @@ export default function AppHeader() {
     : "Dashboard";
 
   return (
-    <header className="h-16 w-full bg-white border-b border-[#E4E6E7] flex items-center">
+    <header className="h-16 w-full bg-white dark:bg-[#111113] border-b border-[#E4E6E7] dark:border-neutral-800 flex items-center">
       <div className="w-16 sm:w-20 md:w-64 px-4 md:px-6 flex items-center">
         <Image
           src="/icons/logo.png"
@@ -51,7 +51,7 @@ export default function AppHeader() {
                   Dashboard
                 </span>
                 <span className="text-neutral-400 hidden sm:inline">/</span>
-                <span className="font-medium text-neutral-900 truncate">
+                <span className="font-medium text-neutral-900 dark:text-white truncate">
                   {currentPage}
                 </span>
               </>
@@ -65,17 +65,18 @@ export default function AppHeader() {
               aria-label="Notifications"
               onClick={() => setShowNotifications((o) => !o)}
               className={`relative p-1.5 rounded-lg transition-colors ${
-                showNotifications ? "bg-gray-100" : "hover:bg-gray-100"
+                showNotifications ?
+                  "bg-gray-100 dark:bg-neutral-800"
+                : "hover:bg-gray-100 dark:hover:bg-neutral-800"
               }`}
             >
-              <Bell size={18} className="text-[#1E1F20]" />
+              <Bell size={18} className="text-[#1E1F20] dark:text-white" />
               {UNREAD_COUNT > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
                   {UNREAD_COUNT > 9 ? "9+" : UNREAD_COUNT}
                 </span>
               )}
             </button>
-
             <AnimatePresence>
               {showNotifications && (
                 <NotificationPanel
@@ -86,8 +87,12 @@ export default function AppHeader() {
           </div>
 
           <div className="text-sm text-right hidden sm:block">
-            <div className="font-medium text-neutral-900">Stephen Samson</div>
-            <div className="text-neutral-500 text-xs">stephen@gmail.com</div>
+            <div className="font-medium text-neutral-900 dark:text-white">
+              Stephen Samson
+            </div>
+            <div className="text-neutral-500 dark:text-neutral-400 text-xs">
+              stephen@gmail.com
+            </div>
           </div>
         </div>
       </div>

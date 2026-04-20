@@ -12,8 +12,8 @@ export default function Toggle({ enabled, onChange, label }: ToggleProps) {
       aria-label={label}
       title={label}
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30 ${
-        enabled ? "bg-green-500" : "bg-gray-200"
+      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30 dark:focus-visible:ring-white/20 ${
+        enabled ? "bg-green-500" : "bg-gray-200 dark:bg-[#2E2E2E]"
       }`}
     >
       <span

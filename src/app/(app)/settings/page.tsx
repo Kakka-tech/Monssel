@@ -11,7 +11,9 @@ export default function SettingsPage() {
   return (
     <PageContainer>
       <div className="space-y-6 max-w-3xl">
-        <h1 className="text-2xl font-semibold text-[#1E1F20]">Settings</h1>
+        <h1 className="text-2xl font-semibold text-[#1E1F20] dark:text-white">
+          Settings
+        </h1>
         <BusinessInfoSection />
         <RegionalSection />
         <DisplaySection />

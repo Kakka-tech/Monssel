@@ -89,9 +89,8 @@ export default function RegionalSection() {
         />
       </div>
 
-      {/* Tip */}
-      <div className="border border-blue-100 rounded-lg p-3 bg-blue-50">
-        <p className="text-xs text-blue-600">
+      <div className="border border-blue-100 dark:border-blue-900/50 rounded-lg p-3 bg-blue-50 dark:bg-blue-950/30">
+        <p className="text-xs text-blue-600 dark:text-blue-400">
           💡 These settings will apply to all transactions, reports, and
           invoices across your account.
         </p>

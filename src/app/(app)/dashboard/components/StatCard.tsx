@@ -5,7 +5,7 @@ interface StatCardProps {
   value: string;
   subtitle: string;
   icon: ReactNode;
-  iconBg: string;
+  iconBg?: string;
 }
 
 export default function StatCard({
@@ -13,20 +13,26 @@ export default function StatCard({
   value,
   subtitle,
   icon,
-  iconBg,
+  iconBg = "bg-neutral-100 dark:bg-[#252525]",
 }: StatCardProps) {
   return (
-    <div className="bg-white border-2 border-[#ECEDEE] rounded-xl p-6 flex justify-between items-start">
+    <div className="flex items-start justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-[#2E2E2E] dark:bg-[#1C1C1C]">
       <div>
-        <p className="text-semibold text-[#707375]">{title}</p>
-        <h2 className="text-2xl font-semibold text-[#1E1F20] mt-1">
+        <p className="text-sm text-neutral-500 dark:text-[#A0A0A0]">{title}</p>
+
+        <h2 className="mt-1 text-2xl font-semibold text-neutral-900 dark:text-white">
           {value}
         </h2>
-        <p className="text-xs text-[#707375] mt-1">{subtitle}</p>
+
+        <p className="mt-1 text-xs text-neutral-500 dark:text-[#A0A0A0]">
+          {subtitle}
+        </p>
       </div>
 
-      <div className={`h-9 w-9 rounded-lg ${iconBg} flex items-center justify-center`}>
-        {icon}
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg}`}
+      >
+        <div className="text-neutral-700 dark:text-white">{icon}</div>
       </div>
     </div>
   );

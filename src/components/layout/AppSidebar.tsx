@@ -18,12 +18,12 @@ import {
 import LogoutModal from "./LogoutModal";
 
 const navItems = [
-  { name: "Dashboard",    href: "/dashboard",    icon: LayoutDashboard },
-  { name: "Record Sales", href: "/record-sales", icon: ShoppingCart    },
-  { name: "Inventory",    href: "/inventory",    icon: Package         },
-  { name: "Expenses",     href: "/expenses",     icon: Receipt         },
-  { name: "Notes",        href: "/notes",        icon: StickyNote      },
-  { name: "Analytics",    href: "/analytics",    icon: BarChart3       },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Record Sales", href: "/record-sales", icon: ShoppingCart },
+  { name: "Inventory", href: "/inventory", icon: Package },
+  { name: "Expenses", href: "/expenses", icon: Receipt },
+  { name: "Notes", href: "/notes", icon: StickyNote },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
 ];
 
 export default function AppSidebar() {
@@ -34,10 +34,10 @@ export default function AppSidebar() {
 
   const getLinkClassName = (href: string) => {
     const active = pathname === href;
-    return `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
-      active
-        ? "bg-[#ECEDEE] text-neutral-900 font-medium"
-        : "text-neutral-600 hover:bg-[#ECEDEE]"
+    return `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+      active ?
+        "bg-[#ECEDEE] dark:bg-neutral-800 text-neutral-900 dark:text-white font-medium"
+      : "text-neutral-600 dark:text-neutral-400 hover:bg-[#ECEDEE] dark:hover:bg-neutral-800"
     }`;
   };
 
@@ -50,7 +50,7 @@ export default function AppSidebar() {
       <button
         aria-label="Open"
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-[#ECEDEE] text-[#1E1F20] rounded-md shadow"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-[#ECEDEE] dark:bg-neutral-800 text-[#1E1F20] dark:text-white rounded-md shadow"
       >
         <Menu size={20} />
       </button>
@@ -64,7 +64,8 @@ export default function AppSidebar() {
 
       <aside
         className={`
-          fixed md:static top-0 left-0 h-full w-64 bg-[#FAFAFA]
+          fixed md:static top-0 left-0 h-full w-64
+          bg-[#FAFAFA] dark:bg-[#111113]
           flex flex-col z-50
           transform transition-transform duration-300
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -72,11 +73,13 @@ export default function AppSidebar() {
         `}
       >
         <div className="flex justify-between items-center p-4 md:hidden">
-          <span className="font-semibold text-[#1E1F20]">Monssel</span>
+          <span className="font-semibold text-[#1E1F20] dark:text-white">
+            Monssel
+          </span>
           <button
             aria-label="Close"
             onClick={() => setIsOpen(false)}
-            className="text-[#1E1F20]"
+            className="text-[#1E1F20] dark:text-white"
           >
             <X size={20} />
           </button>
@@ -99,7 +102,7 @@ export default function AppSidebar() {
           })}
         </nav>
 
-        <div className="border-t border-neutral-200 p-3 space-y-1">
+        <div className="border-t border-neutral-200 dark:border-neutral-800 p-3 space-y-1">
           <Link
             href="/settings"
             onClick={() => setIsOpen(false)}
@@ -108,13 +111,12 @@ export default function AppSidebar() {
             <Settings size={18} />
             Settings
           </Link>
-
           <button
             onClick={() => {
               setIsOpen(false);
               setShowLogout(true);
             }}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 hover:bg-[#ECEDEE] w-full text-left transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 dark:text-neutral-400 hover:bg-[#ECEDEE] dark:hover:bg-neutral-800 w-full text-left transition-colors"
           >
             <LogOut size={18} />
             Log Out

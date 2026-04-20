@@ -17,17 +17,22 @@ export default function RecentTransactions() {
     { title: "Product Name", type: "Income", amount: 180, icon: "box" },
     { title: "Electricity Bill", type: "Expense", amount: 50, icon: "bolt" },
     { title: "Product Name", type: "Income", amount: 290, icon: "box" },
-    { title: "Supplier Payment", type: "Expense", amount: 120, icon: "briefcase" },
+    {
+      title: "Supplier Payment",
+      type: "Expense",
+      amount: 120,
+      icon: "briefcase",
+    },
     { title: "Product Name", type: "Income", amount: 450, icon: "box" },
   ];
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 flex flex-col h-151">
+    <div className="bg-white dark:bg-[#1C1C1C] border border-neutral-200 dark:border-[#2E2E2E] rounded-xl p-6 flex flex-col h-151">
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-neutral-900">
+        <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
           Recent Transactions
         </h3>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-[#A0A0A0]">
           Latest income & expenses
         </p>
       </div>
@@ -38,51 +43,63 @@ export default function RecentTransactions() {
         ))}
       </div>
 
-      <button className="mt-6 bg-[#11181C] text-[white] py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-800 transition">
+      <button className="mt-6 bg-[#11181C] dark:bg-white text-white dark:text-[#121212] py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-800 dark:hover:bg-gray-200 transition">
         View All Transactions
       </button>
     </div>
   );
 }
 
-function Transaction({
-  title,
-  type,
-  amount,
-  icon,
-}: TransactionItem) {
+function Transaction({ title, type, amount, icon }: TransactionItem) {
   const iconMap: Record<
     IconType,
-    { bg: string; color: string; emoji: string }
+    { bg: string; darkBg: string; color: string; emoji: string }
   > = {
-    box: { bg: "bg-blue-100", color: "text-blue-600", emoji: "📦" },
-    bolt: { bg: "bg-pink-100", color: "text-pink-600", emoji: "⚡" },
-    briefcase: { bg: "bg-yellow-100", color: "text-yellow-600", emoji: "💼" },
+    box: {
+      bg: "bg-blue-100",
+      darkBg: "dark:bg-blue-950/40",
+      color: "text-blue-600",
+      emoji: "📦",
+    },
+    bolt: {
+      bg: "bg-pink-100",
+      darkBg: "dark:bg-pink-950/40",
+      color: "text-pink-600",
+      emoji: "⚡",
+    },
+    briefcase: {
+      bg: "bg-yellow-100",
+      darkBg: "dark:bg-yellow-950/40",
+      color: "text-yellow-600",
+      emoji: "💼",
+    },
   };
 
   const isIncome = type === "Income";
-  const { bg, color, emoji } = iconMap[icon];
+  const { bg, darkBg, color, emoji } = iconMap[icon];
 
   return (
-    <div className="flex items-center justify-between bg-[#FAFAFA] border border-[#ECEDEE] p-3 rounded-lg">
+    <div className="flex items-center justify-between bg-[#FAFAFA] dark:bg-[#252525] border border-[#ECEDEE] dark:border-[#2E2E2E] p-3 rounded-lg">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${bg}`}>
+        <div
+          className={`w-10 h-10 flex items-center justify-center rounded-lg ${bg} ${darkBg}`}
+        >
           <span className={`text-lg ${color}`}>{emoji}</span>
         </div>
-
         <div>
-          <p className="text-sm font-medium text-neutral-900">{title}</p>
-          <p className="text-xs text-neutral-500">{type}</p>
+          <p className="text-sm font-medium text-neutral-900 dark:text-white">
+            {title}
+          </p>
+          <p className="text-xs text-neutral-500 dark:text-[#A0A0A0]">{type}</p>
         </div>
       </div>
-
       <div
-        className={`flex items-center gap-1 text-sm font-medium ${
-          isIncome ? "text-[#43B75D]" : "text-[#FC4736]"
-        }`}
+        className={`flex items-center gap-1 text-sm font-medium ${isIncome ? "text-[#43B75D]" : "text-[#FC4736]"}`}
       >
         {isIncome ? `+$${amount.toFixed(2)}` : `-$${amount.toFixed(2)}`}
-        {isIncome ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+        {isIncome ?
+          <ArrowUpRight size={14} />
+        : <ArrowDownRight size={14} />}
       </div>
     </div>
   );

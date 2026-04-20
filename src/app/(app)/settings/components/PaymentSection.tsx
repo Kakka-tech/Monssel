@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard } from "lucide-react";
-import { X } from "lucide-react";
+import { CreditCard, X } from "lucide-react";
 import { PaymentProvider } from "../types";
 import SettingsSection from "./SettingsSection";
 
@@ -50,14 +49,14 @@ export default function PaymentSection() {
             key={provider.id}
             className={`relative rounded-xl border p-4 space-y-3 ${
               provider.connected ?
-                "border-green-200 bg-green-50"
-              : "border-[#ECEDEE] bg-white"
+                "border-green-200 dark:border-green-900/60 bg-green-50 dark:bg-green-950/20"
+              : "border-[#ECEDEE] dark:border-[#2E2E2E] bg-white dark:bg-[#252525]"
             }`}
           >
             {provider.connected && (
               <button
                 onClick={() => disconnect(provider.id)}
-                className="absolute top-3 right-3 text-[#707375] hover:text-red-500 transition-colors"
+                className="absolute top-3 right-3 text-[#707375] dark:text-[#A0A0A0] hover:text-red-500 transition-colors"
                 aria-label="Disconnect"
               >
                 <X className="w-3.5 h-3.5" />
@@ -66,25 +65,27 @@ export default function PaymentSection() {
 
             <div className="flex items-center gap-2">
               <span className="text-xl">{provider.icon}</span>
-              <span className="text-sm font-semibold text-[#1E1F20]">
+              <span className="text-sm font-semibold text-[#1E1F20] dark:text-white">
                 {provider.name}
               </span>
             </div>
 
             {provider.connected ?
               <>
-                <p className="text-xs text-[#707375]">
+                <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
                   {provider.accountName ?? "Connected"}
                 </p>
-                <span className="inline-block text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                <span className="inline-block text-xs font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-2 py-0.5 rounded-full">
                   Connected
                 </span>
               </>
             : <>
-                <p className="text-xs text-[#707375]">Not connected</p>
+                <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
+                  Not connected
+                </p>
                 <button
                   onClick={() => connect(provider.id)}
-                  className="w-full text-sm font-medium bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                  className="w-full text-sm font-medium bg-[#1E1F20] dark:bg-white text-white dark:text-[#121212] py-2 rounded-lg hover:bg-black dark:hover:bg-gray-200 transition-colors"
                 >
                   Connect {provider.name}
                 </button>

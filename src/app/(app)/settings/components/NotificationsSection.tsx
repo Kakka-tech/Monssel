@@ -69,11 +69,15 @@ export default function NotificationsSection() {
         {NOTIFICATION_ITEMS.map(({ key, label, description }) => (
           <div
             key={key}
-            className="flex items-center justify-between py-3 border-b border-[#ECEDEE] last:border-0"
+            className="flex items-center justify-between py-3 border-b border-[#ECEDEE] dark:border-[#2E2E2E] last:border-0"
           >
             <div>
-              <p className="text-sm font-medium text-[#1E1F20]">{label}</p>
-              <p className="text-xs text-[#707375]">{description}</p>
+              <p className="text-sm font-medium text-[#1E1F20] dark:text-white">
+                {label}
+              </p>
+              <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
+                {description}
+              </p>
             </div>
             <Toggle
               enabled={form[key]}
@@ -84,8 +88,8 @@ export default function NotificationsSection() {
         ))}
       </div>
 
-      <div className="border border-amber-200 rounded-lg p-3 bg-amber-50">
-        <p className="text-xs text-amber-700">
+      <div className="border border-amber-200 dark:border-amber-900/50 rounded-lg p-3 bg-amber-50 dark:bg-amber-950/30">
+        <p className="text-xs text-amber-700 dark:text-amber-400">
           💡 Quick Tip: Turn off all notifications for busy nights, or customize
           when alerts matter most to you.
         </p>
@@ -95,13 +99,13 @@ export default function NotificationsSection() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-gray-900 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+          className="bg-[#1E1F20] dark:bg-white text-white dark:text-[#121212] text-sm font-medium px-5 py-2 rounded-lg hover:bg-black dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save Preferences"}
         </button>
         <button
           onClick={() => setForm(DEFAULTS)}
-          className="text-sm text-[#707375] hover:text-[#1E1F20] transition-colors px-2 py-2"
+          className="text-sm text-[#707375] dark:text-[#A0A0A0] hover:text-[#1E1F20] dark:hover:text-white transition-colors px-2 py-2"
         >
           Reset to Default
         </button>

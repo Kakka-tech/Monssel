@@ -24,7 +24,7 @@ export default function SaleForm({
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-gray-700">
+        <label className="text-sm font-medium text-gray-700 dark:text-[#A0A0A0]">
           Quantity <span className="text-red-500">*</span>
         </label>
         <input
@@ -36,28 +36,28 @@ export default function SaleForm({
             const raw = e.target.value;
             if (raw === "" || /^\d+$/.test(raw)) onQuantityChange(raw);
           }}
-          className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition text-[#1E1F20] placeholder:text-[#1E1F20]/40 ${
+          className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-[#1E1F20] text-[#1E1F20] dark:text-white placeholder:text-[#1E1F20]/40 dark:placeholder:text-white/30 ${
             qtyExceedsStock ?
               "border-red-400 focus:ring-red-200 focus:border-red-400"
-            : "border-gray-200 focus:ring-gray-900/10 focus:border-gray-400"
+            : "border-gray-200 dark:border-[#2E2E2E] focus:ring-gray-900/10 dark:focus:ring-white/10 focus:border-gray-400 dark:focus:border-[#505050]"
           }`}
         />
         {selectedProduct && !qtyExceedsStock && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 dark:text-[#A0A0A0]">
             Available: {selectedProduct.stock} units
           </p>
         )}
         {qtyExceedsStock && (
-          <p className="text-xs text-red-500">
+          <p className="text-xs text-red-500 dark:text-red-400">
             Maximum quantity for this product is {selectedProduct!.stock}
           </p>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-gray-700">
+        <label className="text-sm font-medium text-gray-700 dark:text-[#A0A0A0]">
           Price{" "}
-          <span className="text-gray-400 font-normal">
+          <span className="text-gray-400 dark:text-[#707375] font-normal">
             (Optional – defaults to ${selectedProduct?.price ?? 0})
           </span>
         </label>
@@ -67,12 +67,12 @@ export default function SaleForm({
           placeholder={String(selectedProduct?.price ?? 0)}
           value={customPrice}
           onChange={(e) => onCustomPriceChange(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition text-[#1E1F20] placeholder:text-[#1E1F20]/40"
+          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-white/10 focus:border-gray-400 dark:focus:border-[#505050] transition bg-white dark:bg-[#1E1F20] text-[#1E1F20] dark:text-white placeholder:text-[#1E1F20]/40 dark:placeholder:text-white/30"
         />
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-gray-700">
+        <label className="text-sm font-medium text-gray-700 dark:text-[#A0A0A0]">
           Note (Optional)
         </label>
         <textarea
@@ -80,7 +80,7 @@ export default function SaleForm({
           placeholder="Add any notes about this sale..."
           value={note}
           onChange={(e) => onNoteChange(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition text-[#1E1F20] placeholder:text-[#1E1F20]/40"
+          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#2E2E2E] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-white/10 focus:border-gray-400 dark:focus:border-[#505050] transition bg-white dark:bg-[#1E1F20] text-[#1E1F20] dark:text-white placeholder:text-[#1E1F20]/40 dark:placeholder:text-white/30"
         />
       </div>
     </div>

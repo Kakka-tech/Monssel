@@ -13,13 +13,33 @@ const MOCK_PRODUCTS: Product[] = [
 ];
 
 const MOCK_RECENT_SALES: RecentSale[] = [
-  { id: "s1", productName: "Nike Air Max", quantity: 2, total: 200, date: "Today, 2:30 PM" },
-  { id: "s2", productName: "Jordan 1 Retro", quantity: 1, total: 250, date: "Today, 11:00 AM" },
-  { id: "s3", productName: "Adidas Ultra Boost", quantity: 3, total: 540, date: "Yesterday, 4:30 PM" },
+  {
+    id: "s1",
+    productName: "Nike Air Max",
+    quantity: 2,
+    total: 200,
+    date: "Today, 2:30 PM",
+  },
+  {
+    id: "s2",
+    productName: "Jordan 1 Retro",
+    quantity: 1,
+    total: 250,
+    date: "Today, 11:00 AM",
+  },
+  {
+    id: "s3",
+    productName: "Adidas Ultra Boost",
+    quantity: 3,
+    total: 540,
+    date: "Yesterday, 4:30 PM",
+  },
 ];
 
 export default function RecordSalesFull() {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(MOCK_PRODUCTS[0]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(
+    MOCK_PRODUCTS[0],
+  );
   const [quantityRaw, setQuantityRaw] = useState<string>("");
   const [customPrice, setCustomPrice] = useState<string>("");
   const [note, setNote] = useState("");
@@ -27,10 +47,14 @@ export default function RecordSalesFull() {
 
   const quantity = parseInt(quantityRaw) || 1;
   const qtyExceedsStock =
-    quantityRaw !== "" && selectedProduct !== null && quantity > selectedProduct.stock;
+    quantityRaw !== "" &&
+    selectedProduct !== null &&
+    quantity > selectedProduct.stock;
 
   const effectivePrice =
-    customPrice !== "" ? parseFloat(customPrice) || 0 : (selectedProduct?.price ?? 0);
+    customPrice !== "" ?
+      parseFloat(customPrice) || 0
+    : (selectedProduct?.price ?? 0);
   const total = effectivePrice * quantity;
 
   const handleSelectProduct = (product: Product) => {
@@ -58,7 +82,9 @@ export default function RecordSalesFull() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-0">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Record Sale</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        Record Sale
+      </h1>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="w-full flex-1 min-w-0 space-y-5">
