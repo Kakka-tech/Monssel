@@ -29,6 +29,16 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Helper to define active link styles
+  const getLinkClassName = (href: string) => {
+    const active = pathname === href;
+    return `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
+      active
+        ? "bg-[#ECEDEE] text-neutral-900 font-medium"
+        : "text-neutral-600 hover:bg-[#ECEDEE]"
+    }`;
+  };
+
   return (
     <>
       <button
@@ -62,10 +72,11 @@ export default function AppSidebar() {
       >
         <div className="flex justify-between items-center p-4 md:hidden">
           <span className="font-semibold text-[#1E1F20]">Monssel</span>
-          <button aria-label="Close"
-           onClick={() => setIsOpen(false)}
-           className="text-[#1E1F20]"
-           >
+          <button 
+            aria-label="Close"
+            onClick={() => setIsOpen(false)}
+            className="text-[#1E1F20]"
+          >
             <X size={20} />
           </button>
         </div>
@@ -73,18 +84,12 @@ export default function AppSidebar() {
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href;
-
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
-                  active ?
-                    "bg-[#ECEDEE] text-neutral-900 font-medium"
-                  : "text-neutral-600 hover:bg-[#ECEDEE]"
-                }`}
+                className={getLinkClassName(item.href)}
               >
                 <Icon size={18} />
                 {item.name}
@@ -97,7 +102,7 @@ export default function AppSidebar() {
           <Link
             href="/settings"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 hover:bg-[#ECEDEE]"
+            className={getLinkClassName("/settings")}
           >
             <Settings size={18} />
             Settings
