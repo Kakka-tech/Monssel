@@ -2,7 +2,8 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
-import { Sun } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "../types";
 import SettingsSection from "./SettingsSection";
 import SaveBar from "./SaveBar";
@@ -24,6 +25,12 @@ export default function DisplaySection() {
   const [layout, setLayout] = useState<DashboardLayout>("Compact");
   const [saving, setSaving] = useState(false);
 
+  const isDark = mounted && theme === "dark";
+
+  const handleThemeChange = (t: "light" | "dark") => {
+    setTheme(t);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     await new Promise((r) => setTimeout(r, 800));
@@ -36,30 +43,66 @@ export default function DisplaySection() {
       title="Display Preferences"
       description="Customize your app appearance"
     >
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <label className="text-xs font-medium text-[#1E1F20] dark:text-white">
           Theme
         </label>
         <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
           Light mode is selected by default
         </p>
-        <div className="flex gap-2 mt-2">
-          {(["light", "dark"] as const).map((t) => {
-            const isActive = mounted && theme === t;
-            return (
-              <button
-                key={t}
-                onClick={() => setTheme(t)}
-                className={`px-4 py-1.5 text-sm rounded-lg border transition-all ${
-                  isActive ?
-                    "bg-[#1E1F20] dark:bg-white text-white dark:text-[#121212] border-[#1E1F20] dark:border-white"
-                  : "border-[#ECEDEE] dark:border-[#2E2E2E] text-[#707375] dark:text-[#A0A0A0] hover:border-gray-400 dark:hover:border-[#505050]"
-                }`}
-              >
-                {t === "light" ? "☀ Light" : "🌙 Dark"}
-              </button>
-            );
-          })}
+
+        {/* Toggle switch */}
+        <div className="flex items-center gap-4 mt-3">
+          <span
+            className={`text-xs font-medium transition-colors ${!isDark ? "text-[#1E1F20]" : "text-[#A0A0A0]"}`}
+          >
+            ☀ Light
+          </span>
+
+          <button
+            onClick={() => handleThemeChange(isDark ? "light" : "dark")}
+            aria-label="Toggle theme"
+            className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+              isDark ? "bg-[#2E2E2E]" : "bg-[#ECEDEE]"
+            }`}
+          >
+            <motion.div
+              className={`absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center shadow-md ${
+                isDark ? "bg-white" : "bg-[#1E1F20]"
+              }`}
+              animate={{ x: isDark ? 28 : 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            >
+              <AnimatePresence mode="wait">
+                {isDark ?
+                  <motion.span
+                    key="moon"
+                    initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                    exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Moon className="w-3 h-3 text-[#121212]" />
+                  </motion.span>
+                : <motion.span
+                    key="sun"
+                    initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                    exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Sun className="w-3 h-3 text-white" />
+                  </motion.span>
+                }
+              </AnimatePresence>
+            </motion.div>
+          </button>
+
+          <span
+            className={`text-xs font-medium transition-colors ${isDark ? "text-white" : "text-[#A0A0A0]"}`}
+          >
+            🌙 Dark
+          </span>
         </div>
       </div>
 

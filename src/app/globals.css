@@ -35,3 +35,20 @@ body {
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* Smooth theme transition across the whole app */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
+ 
+/* Exclude elements where instant response matters */
+button,
+input,
+select,
+textarea {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+}
