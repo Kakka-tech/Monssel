@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.104.0",
     "clsx": "^2.1.1",
     "country-data": "^0.0.31",
     "framer-motion": "^12.38.0",

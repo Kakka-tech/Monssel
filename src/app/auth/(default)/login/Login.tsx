@@ -6,40 +6,63 @@ import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const [formLoading, setFormLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<null | "Google" | "Apple">(
-    null,
-  );
+  const router = useRouter();
+  const supabase = createClient();
 
+  const [formLoading, setFormLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<null | "Google" | "Apple">(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setFormLoading(true);
 
-    setTimeout(() => {
-      alert(`Mock login successful for ${formData.email}!`);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (error) {
+      setError(error.message);
       setFormLoading(false);
-    }, 1500);
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
   };
 
-  const handleSocialLogin = (provider: "Google" | "Apple") => {
-    setSocialLoading(provider);
+  const handleGoogleLogin = async () => {
+    setSocialLoading("Google");
+    setError(null);
 
-    setTimeout(() => {
-      alert(`Mock login successful with ${provider}!`);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
       setSocialLoading(null);
-    }, 1200);
+    }
   };
 
   return (
@@ -49,40 +72,35 @@ export default function LoginPage() {
     >
       <div className="text-center space-y-1">
         <div className="w-9 h-9 flex items-center justify-center mx-auto rounded-lg border border-white/60 bg-white/70 backdrop-blur-sm shadow-[0_6px_18px_rgba(0,0,0,0.08)]">
-          <Image
-            src="/icons/logo.png"
-            alt="Logo"
-            width={20}
-            height={20}
-            className="object-contain"
-          />
+          <Image src="/icons/logo.png" alt="Logo" width={20} height={20} className="object-contain" />
         </div>
         <h1 className="text-xl font-semibold text-neutral-900">Welcome Back</h1>
         <p className="text-xs text-neutral-500">Sign in to continue</p>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2.5">
+          {error}
+        </div>
+      )}
+
       <button
         type="button"
-        onClick={() => handleSocialLogin("Google")}
-        className="w-full flex items-center justify-center gap-2 border-2 border-[#1E1F2014] rounded-lg py-2.5 hover:bg-neutral-50 bg-white text-[#1E1F20] font-medium transition text-sm"
+        onClick={handleGoogleLogin}
         disabled={socialLoading !== null || formLoading}
+        className="w-full flex items-center justify-center gap-2 border-2 border-[#1E1F2014] rounded-lg py-2.5 hover:bg-neutral-50 bg-white text-[#1E1F20] font-medium transition text-sm disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <FcGoogle size={18} />
-        {socialLoading === "Google" ?
-          "Signing in with Google..."
-        : "Sign in with Google"}
+        {socialLoading === "Google" ? "Redirecting..." : "Sign in with Google"}
       </button>
 
       <button
         type="button"
-        onClick={() => handleSocialLogin("Apple")}
-        className="w-full flex items-center justify-center gap-2 border-2 border-[#1E1F2014] rounded-lg py-2.5 hover:bg-neutral-50 bg-white text-[#1E1F20] font-medium transition text-sm"
-        disabled={socialLoading !== null || formLoading}
+        disabled
+        className="w-full flex items-center justify-center gap-2 border-2 border-[#1E1F2014] rounded-lg py-2.5 bg-white text-[#1E1F20] font-medium text-sm opacity-40 cursor-not-allowed"
       >
         <FaApple size={16} className="text-black" />
-        {socialLoading === "Apple" ?
-          "Signing in with Apple..."
-        : "Sign in with Apple"}
+        Sign in with Apple
       </button>
 
       <div className="flex items-center gap-2">
@@ -116,9 +134,7 @@ export default function LoginPage() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
           >
-            {showPassword ?
-              <EyeOff size={16} />
-            : <Eye size={16} />}
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
       </div>
@@ -131,18 +147,15 @@ export default function LoginPage() {
 
       <button
         type="submit"
-        className="w-full bg-neutral-900 text-white py-2.5 rounded-lg hover:bg-black transition text-sm"
         disabled={formLoading || socialLoading !== null}
+        className="w-full bg-neutral-900 text-white py-2.5 rounded-lg hover:bg-black transition text-sm disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {formLoading ? "Signing In..." : "Sign In"}
       </button>
 
       <p className="text-center text-xs text-neutral-500">
         Don&apos;t have an account?{" "}
-        <Link
-          href="/auth/signup"
-          className="font-medium text-neutral-900 hover:underline"
-        >
+        <Link href="/auth/signup" className="font-medium text-neutral-900 hover:underline">
           Sign Up
         </Link>
       </p>
