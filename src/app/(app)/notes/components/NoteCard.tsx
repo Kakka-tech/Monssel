@@ -26,17 +26,18 @@ export default function NoteCard({ note }: NoteCardProps) {
   const styles = CATEGORY_STYLES[note.category];
 
   return (
-    <div className="flex items-start gap-3 py-4 border-b border-[#ECEDEE] last:border-0">
+    <div className="flex items-start gap-3 py-4 border-b border-[#ECEDEE] dark:border-[#2E2E2E] last:border-0">
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${styles.avatar}`}
       >
         {AVATAR_ICON[note.category]}
       </div>
-
       <div className="flex-1 min-w-0 space-y-1.5">
-        <p className="text-sm text-[#1E1F20] leading-snug">{note.content}</p>
+        <p className="text-sm text-[#1E1F20] dark:text-white leading-snug">
+          {note.content}
+        </p>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="flex items-center gap-1 text-xs text-[#707375]">
+          <span className="flex items-center gap-1 text-xs text-[#707375] dark:text-[#A0A0A0]">
             <Clock className="w-3 h-3" />
             {timeAgo(note.createdAt)}
           </span>

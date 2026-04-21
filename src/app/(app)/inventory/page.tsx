@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import InventoryOnboarding from "./components/InventoryOnboarding";
@@ -34,7 +33,6 @@ export default function InventoryPage() {
 //   const handleAddProduct = () => {
 //     // TODO: open add-product modal/drawer from the full view
 //   };
-
 //   return (
 //     <PageContainer>
 //       <InventoryFull onAddProduct={handleAddProduct} />

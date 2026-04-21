@@ -1,5 +1,4 @@
 "use client";
-
 import {
   AreaChart,
   Area,
@@ -9,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useTheme } from "next-themes";
 import { ChartDataPoint } from "../types";
 
 const DATA: ChartDataPoint[] = [
@@ -26,12 +26,21 @@ function formatY(value: number) {
 }
 
 export default function RevenueChart() {
+  const { resolvedTheme } = useTheme();
+  const dark = resolvedTheme === "dark";
+
+  const tickColor = dark ? "#A0A0A0" : "#707375";
+  const gridColor = dark ? "#2E2E2E" : "#F3F4F6";
+  const tooltipBg = dark ? "#1E1F20" : "#ffffff";
+  const tooltipBorder = dark ? "#2E2E2E" : "#ECEDEE";
+  const tooltipText = dark ? "#ffffff" : "#1E1F20";
+
   return (
-    <div className="bg-white border border-[#ECEDEE] rounded-xl p-5 space-y-1">
-      <h3 className="text-sm font-semibold text-[#1E1F20]">
+    <div className="bg-white dark:bg-[#1E1F20] border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-xl p-5 space-y-1">
+      <h3 className="text-sm font-semibold text-[#1E1F20] dark:text-white">
         Revenue vs Expenses
       </h3>
-      <p className="text-xs text-[#707375]">
+      <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
         Compare income and operating expenses
       </p>
       <div className="h-52 mt-4">
@@ -42,24 +51,32 @@ export default function RevenueChart() {
           >
             <defs>
               <linearGradient id="gradSales" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
+                <stop
+                  offset="5%"
+                  stopColor="#3B82F6"
+                  stopOpacity={dark ? 0.25 : 0.15}
+                />
                 <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gradExpenses" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#EF4444" stopOpacity={0.12} />
+                <stop
+                  offset="5%"
+                  stopColor="#EF4444"
+                  stopOpacity={dark ? 0.2 : 0.12}
+                />
                 <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
             <XAxis
               dataKey="month"
-              tick={{ fontSize: 11, fill: "#707375" }}
+              tick={{ fontSize: 11, fill: tickColor }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               tickFormatter={formatY}
-              tick={{ fontSize: 11, fill: "#707375" }}
+              tick={{ fontSize: 11, fill: tickColor }}
               axisLine={false}
               tickLine={false}
             />
@@ -69,9 +86,11 @@ export default function RevenueChart() {
                 "",
               ]}
               contentStyle={{
-                border: "1px solid #ECEDEE",
+                backgroundColor: tooltipBg,
+                border: `1px solid ${tooltipBorder}`,
                 borderRadius: 8,
                 fontSize: 12,
+                color: tooltipText,
               }}
             />
             <Area

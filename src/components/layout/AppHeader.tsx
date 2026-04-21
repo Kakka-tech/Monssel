@@ -1,13 +1,19 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { useTheme } from "next-themes";
 import { Bell, PanelLeft } from "lucide-react";
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import NotificationPanel from "./NotificationPanel";
 
 const UNREAD_COUNT = 3;
+
+function subscribe(cb: () => void) {
+  window.addEventListener("storage", cb);
+  return () => window.removeEventListener("storage", cb);
+}
 
 function formatTitle(segment: string) {
   return segment
@@ -17,7 +23,16 @@ function formatTitle(segment: string) {
 
 export default function AppHeader() {
   const pathname = usePathname();
+  const { theme } = useTheme();
+  const mounted = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const logoSrc =
+    mounted && theme === "dark" ? "/Icons/logo.png" : "/Icons/logo-dark.png";
 
   const segments = pathname.split("/").filter(Boolean);
   const isDashboardRoot = segments.length === 1 && segments[0] === "dashboard";
@@ -27,10 +42,10 @@ export default function AppHeader() {
     : "Dashboard";
 
   return (
-    <header className="h-16 w-full bg-white dark:bg-[#111113] border-b border-[#E4E6E7] dark:border-neutral-800 flex items-center">
+    <header className="h-16 w-full bg-white dark:bg-[#111113] border-b border-[#E4E6E7] dark:border-[#2E2E2E] flex items-center">
       <div className="w-16 sm:w-20 md:w-64 px-4 md:px-6 flex items-center">
         <Image
-          src="/icons/logo.png"
+          src={logoSrc}
           alt="Monssel Logo"
           width={26}
           height={26}
@@ -66,8 +81,8 @@ export default function AppHeader() {
               onClick={() => setShowNotifications((o) => !o)}
               className={`relative p-1.5 rounded-lg transition-colors ${
                 showNotifications ?
-                  "bg-gray-100 dark:bg-neutral-800"
-                : "hover:bg-gray-100 dark:hover:bg-neutral-800"
+                  "bg-gray-100 dark:bg-[#252525]"
+                : "hover:bg-gray-100 dark:hover:bg-[#252525]"
               }`}
             >
               <Bell size={18} className="text-[#1E1F20] dark:text-white" />
@@ -90,7 +105,7 @@ export default function AppHeader() {
             <div className="font-medium text-neutral-900 dark:text-white">
               Stephen Samson
             </div>
-            <div className="text-neutral-500 dark:text-neutral-400 text-xs">
+            <div className="text-neutral-500 dark:text-[#A0A0A0] text-xs">
               stephen@gmail.com
             </div>
           </div>

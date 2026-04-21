@@ -23,7 +23,7 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
         />
 
         <motion.div
-          className="relative z-10 w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 space-y-5"
+          className="relative z-10 w-full max-w-sm bg-white dark:bg-[#1E1F20] rounded-2xl shadow-2xl p-6 space-y-5"
           initial={{ scale: 0.75, opacity: 0, y: 20 }}
           animate={{
             scale: 1,
@@ -46,13 +46,13 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
           <button
             onClick={onCancel}
             aria-label="Close"
-            className="absolute top-4 right-4 text-[#707375] hover:text-[#1E1F20] transition-colors"
+            className="absolute top-4 right-4 text-[#707375] dark:text-[#A0A0A0] hover:text-[#1E1F20] dark:hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
 
           <motion.div
-            className="flex items-center justify-center w-12 h-12 rounded-full bg-red-50 mx-auto"
+            className="flex items-center justify-center w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/40 mx-auto"
             initial={{ scale: 0, rotate: -15 }}
             animate={{
               scale: 1,
@@ -65,7 +65,7 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
               },
             }}
           >
-            <LogOut className="w-5 h-5 text-red-500" />
+            <LogOut className="w-5 h-5 text-red-500 dark:text-red-400" />
           </motion.div>
 
           <motion.div
@@ -77,8 +77,8 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
               transition: { delay: 0.12, duration: 0.2 },
             }}
           >
-            <h2 className="text-base font-semibold text-[#1E1F20]">Log Out</h2>
-            <p className="text-sm text-[#707375]">
+            <h2 className="text-base font-semibold text-[#1E1F20] dark:text-white">Log Out</h2>
+            <p className="text-sm text-[#707375] dark:text-[#A0A0A0]">
               Are you sure you want to log out? You&apos;ll need to sign in
               again to access your account.
             </p>
@@ -95,13 +95,13 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
           >
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-2.5 text-sm font-medium border border-[#ECEDEE] text-[#1E1F20] rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium border border-[#ECEDEE] dark:border-[#2E2E2E] text-[#1E1F20] dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 px-4 py-2.5 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
             >
               Log Out
             </button>

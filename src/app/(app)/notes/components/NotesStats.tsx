@@ -5,9 +5,9 @@ interface NotesStatsProps {
 }
 
 const colorMap: Record<NoteCategory, string> = {
-  Customer:    "text-blue-500",
-  Supplier:    "text-blue-500",
-  Observation: "text-amber-500",
+  Customer: "text-blue-500 dark:text-blue-400",
+  Supplier: "text-blue-500 dark:text-blue-400",
+  Observation: "text-amber-500 dark:text-amber-400",
 };
 
 export default function NotesStats({ notes }: NotesStatsProps) {
@@ -15,16 +15,22 @@ export default function NotesStats({ notes }: NotesStatsProps) {
     notes.filter((n) => n.category === cat).length;
 
   return (
-    <div className="border border-[#ECEDEE] rounded-xl flex divide-x divide-[#ECEDEE] overflow-hidden">
-      <div className="flex-1 px-5 py-4">
-        <p className="text-xs text-[#707375]">Total Notes</p>
-        <p className="text-2xl font-semibold text-[#1E1F20] mt-1">{notes.length}</p>
+    <div className="grid grid-cols-4 gap-3">
+      <div className="border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-xl px-4 py-3.5 bg-white dark:bg-[#1E1F20] space-y-2">
+        <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
+          Total Notes
+        </p>
+        <p className="text-2xl font-semibold text-[#1E1F20] dark:text-white">
+          {notes.length}
+        </p>
       </div>
-
       {NOTE_CATEGORIES.map((cat) => (
-        <div key={cat} className="flex-1 px-5 py-4">
-          <p className="text-xs text-[#707375]">{cat}s</p>
-          <p className={`text-2xl font-semibold mt-1 ${colorMap[cat]}`}>
+        <div
+          key={cat}
+          className="border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-xl px-4 py-3.5 bg-white dark:bg-[#1E1F20] space-y-2"
+        >
+          <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">{cat}s</p>
+          <p className={`text-2xl font-semibold ${colorMap[cat]}`}>
             {countByCategory(cat)}
           </p>
         </div>

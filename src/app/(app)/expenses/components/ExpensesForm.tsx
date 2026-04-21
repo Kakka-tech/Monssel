@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { ExpenseCategory } from "../types";
 import ExpenseDetails from "./ExpenseDetails";
@@ -7,7 +6,8 @@ import ExpenseSummary from "./ExpenseSummary";
 
 export default function ExpensesForm() {
   const [amountRaw, setAmountRaw] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<ExpenseCategory | null>(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
