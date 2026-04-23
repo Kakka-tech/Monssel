@@ -14,7 +14,9 @@ export default function LoginPage() {
   const supabase = createClient();
 
   const [formLoading, setFormLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<null | "Google" | "Apple">(null);
+  const [socialLoading, setSocialLoading] = useState<null | "Google" | "Apple">(
+    null,
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +74,13 @@ export default function LoginPage() {
     >
       <div className="text-center space-y-1">
         <div className="w-9 h-9 flex items-center justify-center mx-auto rounded-lg border border-white/60 bg-white/70 backdrop-blur-sm shadow-[0_6px_18px_rgba(0,0,0,0.08)]">
-          <Image src="/icons/logo.png" alt="Logo" width={20} height={20} className="object-contain" />
+          <Image
+            src="/Icons/logo-dark.png"
+            alt="Logo"
+            width={20}
+            height={20}
+            className="object-contain"
+          />
         </div>
         <h1 className="text-xl font-semibold text-neutral-900">Welcome Back</h1>
         <p className="text-xs text-neutral-500">Sign in to continue</p>
@@ -134,7 +142,9 @@ export default function LoginPage() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
           >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPassword ?
+              <EyeOff size={16} />
+            : <Eye size={16} />}
           </button>
         </div>
       </div>
@@ -155,7 +165,10 @@ export default function LoginPage() {
 
       <p className="text-center text-xs text-neutral-500">
         Don&apos;t have an account?{" "}
-        <Link href="/auth/signup" className="font-medium text-neutral-900 hover:underline">
+        <Link
+          href="/auth/signup"
+          className="font-medium text-neutral-900 hover:underline"
+        >
           Sign Up
         </Link>
       </p>

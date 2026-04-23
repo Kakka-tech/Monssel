@@ -96,7 +96,7 @@ export default function SignUp() {
       <div className="w-full max-w-md mx-auto bg-transparent p-5 md:p-6 space-y-4 text-center">
         <div className="w-9 h-9 flex items-center justify-center mx-auto rounded-lg border border-white/60 bg-white/70 backdrop-blur-sm shadow-[0_6px_18px_rgba(0,0,0,0.08)]">
           <Image
-            src="/icons/logo.png"
+            src="/Icons/logo-dark.png"
             alt="Logo"
             width={20}
             height={20}
