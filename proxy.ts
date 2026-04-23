@@ -32,7 +32,9 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAuthRoute = pathname.startsWith("/auth");
-  const isAppRoute = pathname.startsWith("/dashboard") ||
+
+  const isAppRoute =
+    pathname.startsWith("/dashboard") ||
     pathname.startsWith("/inventory") ||
     pathname.startsWith("/record-sales") ||
     pathname.startsWith("/expenses") ||
