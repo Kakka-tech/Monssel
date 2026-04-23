@@ -22,7 +22,6 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -57,10 +56,8 @@ export default function SignUp() {
       email: formData.email,
       password: formData.password,
       options: {
-        data: {
-          full_name: formData.fullName,
-        },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { full_name: formData.fullName },
+        // No emailRedirectTo — using OTP verification flow instead of magic link
       },
     });
 
@@ -70,8 +67,8 @@ export default function SignUp() {
       return;
     }
 
-    setSuccess(true);
-    setFormLoading(false);
+    // Hand off to the OTP verify page
+    router.push(`/auth/verify?email=${encodeURIComponent(formData.email)}`);
   };
 
   const handleGoogleSignup = async () => {
@@ -91,40 +88,6 @@ export default function SignUp() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="w-full max-w-md mx-auto bg-transparent p-5 md:p-6 space-y-4 text-center">
-        <div className="w-9 h-9 flex items-center justify-center mx-auto rounded-lg border border-white/60 bg-white/70 backdrop-blur-sm shadow-[0_6px_18px_rgba(0,0,0,0.08)]">
-          <Image
-            src="/Icons/logo-dark.png"
-            alt="Logo"
-            width={20}
-            height={20}
-            className="object-contain"
-          />
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-xl font-semibold text-neutral-900">
-            Check your email
-          </h1>
-          <p className="text-sm text-neutral-500">
-            We sent a confirmation link to{" "}
-            <span className="font-medium text-neutral-900">
-              {formData.email}
-            </span>
-            . Click the link to activate your account.
-          </p>
-        </div>
-        <button
-          onClick={() => router.push("/auth/login")}
-          className="w-full bg-neutral-900 text-white py-2.5 rounded-lg hover:bg-black transition text-sm"
-        >
-          Go to Login
-        </button>
-      </div>
-    );
-  }
-
   return (
     <form
       className="w-full max-w-md mx-auto bg-transparent p-5 md:p-6 space-y-4"
@@ -133,7 +96,7 @@ export default function SignUp() {
       <div className="text-center space-y-1">
         <div className="w-9 h-9 flex items-center justify-center mx-auto rounded-lg border border-white/60 bg-white/70 backdrop-blur-sm shadow-[0_6px_18px_rgba(0,0,0,0.08)]">
           <Image
-            src="/icons/logo.png"
+            src="/Icons/logo-dark.png"
             alt="Logo"
             width={20}
             height={20}

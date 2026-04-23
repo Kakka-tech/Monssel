@@ -31,7 +31,9 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const isAuthRoute = pathname.startsWith("/auth");
+  // /auth/verify is excluded — user may have a partial session mid-OTP flow
+  const isAuthRoute =
+    pathname.startsWith("/auth") && !pathname.startsWith("/auth/verify");
 
   const isAppRoute =
     pathname.startsWith("/dashboard") ||
