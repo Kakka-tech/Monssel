@@ -87,7 +87,6 @@ export default function VerifyPage() {
       next[i] = char;
     });
     setDigits(next);
-    // Focus the last filled box or the next empty one
     const focusIndex = Math.min(pasted.length, CODE_LENGTH - 1);
     inputRefs.current[focusIndex]?.focus();
   };
