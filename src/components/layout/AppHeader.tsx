@@ -1,12 +1,14 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Bell, PanelLeft } from "lucide-react";
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import NotificationPanel from "./NotificationPanel";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 const UNREAD_COUNT = 3;
 
@@ -30,6 +32,12 @@ export default function AppHeader() {
     () => false,
   );
   const [showNotifications, setShowNotifications] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+  }, []);
 
   const logoSrc =
     mounted && theme === "dark" ? "/Icons/logo.png" : "/Icons/logo-dark.png";
@@ -40,6 +48,14 @@ export default function AppHeader() {
     segments.length > 0 ?
       formatTitle(segments[segments.length - 1])
     : "Dashboard";
+
+  const displayName =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email?.split("@")[0] ||
+    "User";
+
+  const displayEmail = user?.email || "";
 
   return (
     <header className="h-16 w-full bg-white dark:bg-[#111113] border-b border-[#E4E6E7] dark:border-[#2E2E2E] flex items-center">
@@ -103,10 +119,10 @@ export default function AppHeader() {
 
           <div className="text-sm text-right hidden sm:block">
             <div className="font-medium text-neutral-900 dark:text-white">
-              Stephen Samson
+              {displayName}
             </div>
             <div className="text-neutral-500 dark:text-[#A0A0A0] text-xs">
-              stephen@gmail.com
+              {displayEmail}
             </div>
           </div>
         </div>
