@@ -4,151 +4,483 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          email: string;
-          full_name: string | null;
-          avatar_url: string | null;
-          business_name: string | null;
-          business_email: string | null;
-          phone_number: string | null;
-          tax_id: string | null;
-          business_address: string | null;
-          currency: string;
-          timezone: string;
-          date_format: string;
-          number_format: string;
-          theme: "light" | "dark";
-          dashboard_layout: "Compact" | "Comfortable" | "Spacious";
-          notif_email: boolean;
-          notif_low_stock: boolean;
-          notif_expenses: boolean;
-          notif_weekly_reports: boolean;
-          notif_marketing: boolean;
-          paystack_connected: boolean;
-          paystack_account: string | null;
-          flutterwave_connected: boolean;
-          flutterwave_account: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & {
-          id: string;
-          email: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
-      };
-      products: {
-        Row: {
-          id: string;
-          user_id: string;
-          name: string;
-          price: number;
-          stock: number;
-          low_stock_threshold: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["products"]["Row"],
-          "id" | "created_at" | "updated_at"
-        > & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["products"]["Row"]>;
-      };
-      sales: {
-        Row: {
-          id: string;
-          user_id: string;
-          product_id: string | null;
-          product_name: string;
-          quantity: number;
-          price: number;
-          total: number;
-          note: string | null;
-          created_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["sales"]["Row"],
-          "id" | "created_at"
-        > & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["sales"]["Row"]>;
-      };
       expenses: {
         Row: {
-          id: string;
-          user_id: string;
-          amount: number;
-          category:
-            | "Supplies"
-            | "Rent"
-            | "Utilities"
-            | "Marketing"
-            | "Shipping"
-            | "Equipment"
-            | "Salary"
-            | "Other";
-          note: string | null;
-          created_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["expenses"]["Row"],
-          "id" | "created_at"
-        > & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["expenses"]["Row"]>;
-      };
+          amount: number
+          category: string
+          created_at: string
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
-          id: string;
-          user_id: string;
-          content: string;
-          category: "Customer" | "Supplier" | "Observation";
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["notes"]["Row"],
-          "id" | "created_at" | "updated_at"
-        > & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["notes"]["Row"]>;
-      };
+          category: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
-          id: string;
-          user_id: string;
-          type: "sale" | "stock" | "expense" | "note" | "alert";
-          title: string;
-          message: string;
-          read: boolean;
-          created_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["notifications"]["Row"],
-          "id" | "created_at"
-        > & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["notifications"]["Row"]>;
-      };
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          id: string
+          low_stock_threshold: number
+          name: string
+          price: number
+          stock: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          name: string
+          price: number
+          stock?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          name?: string
+          price?: number
+          stock?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          business_address: string | null
+          business_email: string | null
+          business_name: string | null
+          created_at: string
+          currency: string
+          dashboard_layout: string
+          date_format: string
+          email: string
+          flutterwave_account: string | null
+          flutterwave_connected: boolean
+          full_name: string | null
+          id: string
+          notif_email: boolean
+          notif_expenses: boolean
+          notif_low_stock: boolean
+          notif_marketing: boolean
+          notif_weekly_reports: boolean
+          number_format: string
+          paystack_account: string | null
+          paystack_connected: boolean
+          phone_number: string | null
+          tax_id: string | null
+          theme: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          business_address?: string | null
+          business_email?: string | null
+          business_name?: string | null
+          created_at?: string
+          currency?: string
+          dashboard_layout?: string
+          date_format?: string
+          email: string
+          flutterwave_account?: string | null
+          flutterwave_connected?: boolean
+          full_name?: string | null
+          id: string
+          notif_email?: boolean
+          notif_expenses?: boolean
+          notif_low_stock?: boolean
+          notif_marketing?: boolean
+          notif_weekly_reports?: boolean
+          number_format?: string
+          paystack_account?: string | null
+          paystack_connected?: boolean
+          phone_number?: string | null
+          tax_id?: string | null
+          theme?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          business_address?: string | null
+          business_email?: string | null
+          business_name?: string | null
+          created_at?: string
+          currency?: string
+          dashboard_layout?: string
+          date_format?: string
+          email?: string
+          flutterwave_account?: string | null
+          flutterwave_connected?: boolean
+          full_name?: string | null
+          id?: string
+          notif_email?: boolean
+          notif_expenses?: boolean
+          notif_low_stock?: boolean
+          notif_marketing?: boolean
+          notif_weekly_reports?: boolean
+          number_format?: string
+          paystack_account?: string | null
+          paystack_connected?: boolean
+          phone_number?: string | null
+          tax_id?: string | null
+          theme?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          price: number
+          product_id: string | null
+          product_name: string
+          quantity: number
+          total: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          price: number
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          total: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          price?: number
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_movements: {
         Row: {
-          id: string;
-          user_id: string;
-          product_id: string;
-          type: "add" | "sale" | "adjustment";
-          quantity: number;
-          note: string | null;
-          created_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["stock_movements"]["Row"],
-          "id" | "created_at"
-        > & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["stock_movements"]["Row"]>;
-      };
-    };
-  };
-};
+          created_at: string
+          id: string
+          note: string | null
+          product_id: string
+          quantity: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          product_id: string
+          quantity: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          product_id?: string
+          quantity?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
