@@ -1,5 +1,6 @@
 import { ShoppingCart, Package } from "lucide-react";
 import { Product, RecentSale } from "../types";
+import { useCurrency } from "@/lib/currency-context";
 
 interface SaleSummaryProps {
   selectedProduct: Product | null;
@@ -24,6 +25,8 @@ export default function SaleSummary({
   onSave,
   onCancel,
 }: SaleSummaryProps) {
+  const { format } = useCurrency();
+
   return (
     <div className="w-full lg:w-64 shrink-0 space-y-4">
       <div className="border border-gray-200 dark:border-[#2E2E2E] rounded-xl p-5 space-y-4 bg-white dark:bg-[#1C1C1C]">
@@ -46,7 +49,7 @@ export default function SaleSummary({
           <div className="flex justify-between text-gray-600 dark:text-[#A0A0A0]">
             <span>Price per unit</span>
             <span className="text-gray-900 dark:text-white font-medium">
-              ${effectivePrice.toFixed(2)}
+              {format(effectivePrice)}
             </span>
           </div>
           <div className="border-t border-gray-100 dark:border-[#2E2E2E] pt-2.5 flex justify-between">
@@ -54,7 +57,7 @@ export default function SaleSummary({
               Total Amount
             </span>
             <span className="font-semibold text-green-600 dark:text-green-400">
-              ${total.toFixed(2)}
+              {format(total)}
             </span>
           </div>
         </div>
@@ -96,7 +99,7 @@ export default function SaleSummary({
                 </p>
               </div>
               <span className="text-xs font-semibold text-gray-700 dark:text-[#A0A0A0] shrink-0">
-                ${sale.total.toFixed(2)}
+                {format(sale.total)}
               </span>
             </div>
           ))}

@@ -1,4 +1,5 @@
 import { Product } from "../types";
+import { useCurrency } from "@/lib/currency-context";
 
 interface SaleFormProps {
   selectedProduct: Product | null;
@@ -21,6 +22,8 @@ export default function SaleForm({
   note,
   onNoteChange,
 }: SaleFormProps) {
+  const { format } = useCurrency();
+
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
@@ -58,7 +61,7 @@ export default function SaleForm({
         <label className="text-sm font-medium text-gray-700 dark:text-[#A0A0A0]">
           Price{" "}
           <span className="text-gray-400 dark:text-[#707375] font-normal">
-            (Optional – defaults to ${selectedProduct?.price ?? 0})
+            (Optional – defaults to {format(selectedProduct?.price ?? 0)})
           </span>
         </label>
         <input

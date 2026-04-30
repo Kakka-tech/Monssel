@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { useCurrency } from "@/lib/currency-context";
 
 const data = [
   { category: "Electronics", sales: 1200 },
@@ -19,10 +20,7 @@ const data = [
 ];
 
 export default function SalesByCategory() {
-  const formatTooltipValue = (value?: number) => {
-    if (value === undefined) return "";
-    return `$${value}`;
-  };
+  const { format } = useCurrency();
 
   return (
     <div className="bg-white dark:bg-[#1C1C1C] border border-neutral-200 dark:border-[#2E2E2E] rounded-xl p-6">
@@ -57,7 +55,10 @@ export default function SalesByCategory() {
                 backgroundColor: "#1C1C1C",
                 color: "#ffffff",
               }}
-              formatter={formatTooltipValue}
+              formatter={(value: number | undefined) => [
+                format(value ?? 0),
+                "Sales",
+              ]}
             />
             <Bar dataKey="sales" fill="#3B82F6" radius={[6, 6, 0, 0]} />
           </BarChart>

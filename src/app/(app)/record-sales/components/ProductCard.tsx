@@ -1,5 +1,6 @@
 import { Product } from "../types";
 import StockBadge from "../components/StockBadge";
+import { useCurrency } from "@/lib/currency-context";
 
 interface ProductCardProps {
   product: Product;
@@ -12,6 +13,8 @@ export default function ProductCard({
   isSelected,
   onSelect,
 }: ProductCardProps) {
+  const { format } = useCurrency();
+
   return (
     <button
       onClick={() => onSelect(product)}
@@ -30,7 +33,7 @@ export default function ProductCard({
       </div>
       <div className="mt-0.5 flex items-center gap-2">
         <span className="text-sm text-gray-500 dark:text-[#A0A0A0]">
-          ${product.price}
+          {format(product.price)}
         </span>
         <span className="text-xs text-gray-400 dark:text-[#707375]">
           {product.stock} in stock

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RegionalSettings } from "../types";
 import { Globe } from "lucide-react";
+import { useCurrency } from "@/lib/currency-context";
 import SettingsSection from "./SettingsSection";
 import SettingsSelect from "./SettingsSelect";
 import SaveBar from "./SaveBar";
@@ -40,16 +41,64 @@ const NUMBER_FORMATS = [
 ];
 
 export default function RegionalSection() {
+  const { setCurrency } = useCurrency();
   const [form, setForm] = useState<RegionalSettings>(DEFAULTS);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
-  const set = (key: keyof RegionalSettings) => (value: string) =>
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((profile) => {
+        if (!profile) return;
+        setForm({
+          defaultCurrency: profile.currency ?? DEFAULTS.defaultCurrency,
+          timezone: profile.timezone ?? DEFAULTS.timezone,
+          dateFormat: profile.date_format ?? DEFAULTS.dateFormat,
+          numberFormat: profile.number_format ?? DEFAULTS.numberFormat,
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  const set = (key: keyof RegionalSettings) => (value: string) => {
+    setError(null);
+    setSaved(false);
     setForm((p) => ({ ...p, [key]: value }));
+  };
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
+    setError(null);
+
+    const res = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        currency: form.defaultCurrency,
+        timezone: form.timezone,
+        date_format: form.dateFormat,
+        number_format: form.numberFormat,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Failed to save settings");
+      setSaving(false);
+      return;
+    }
+
+    setCurrency(form.defaultCurrency);
+    setSaved(true);
     setSaving(false);
+  };
+
+  const handleCancel = () => {
+    setForm(DEFAULTS);
+    setError(null);
+    setSaved(false);
   };
 
   return (
@@ -89,6 +138,18 @@ export default function RegionalSection() {
         />
       </div>
 
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2.5">
+          {error}
+        </div>
+      )}
+
+      {saved && (
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 text-green-600 dark:text-green-400 text-xs rounded-lg px-3 py-2.5">
+          ✓ Regional settings saved successfully
+        </div>
+      )}
+
       <div className="border border-blue-100 dark:border-blue-900/50 rounded-lg p-3 bg-blue-50 dark:bg-blue-950/30">
         <p className="text-xs text-blue-600 dark:text-blue-400">
           💡 These settings will apply to all transactions, reports, and
@@ -96,11 +157,7 @@ export default function RegionalSection() {
         </p>
       </div>
 
-      <SaveBar
-        onSave={handleSave}
-        onCancel={() => setForm(DEFAULTS)}
-        saving={saving}
-      />
+      <SaveBar onSave={handleSave} onCancel={handleCancel} saving={saving} />
     </SettingsSection>
   );
 }

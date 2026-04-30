@@ -1,6 +1,6 @@
 export interface StatCard {
   label: string;
-  value: string;
+  value: number;
   change: string;
   changePositive: boolean;
   sub?: string;

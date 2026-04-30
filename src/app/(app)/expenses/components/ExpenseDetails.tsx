@@ -1,5 +1,7 @@
 "use client";
+
 import { EXPENSE_CATEGORIES, ExpenseCategory } from "../types";
+import { useCurrency } from "@/lib/currency-context";
 
 interface ExpenseDetailsProps {
   amountRaw: string;
@@ -18,20 +20,21 @@ export default function ExpenseDetails({
   note,
   onNoteChange,
 }: ExpenseDetailsProps) {
+  const { symbol } = useCurrency();
+
   return (
     <div className="w-full xl:flex-1 xl:min-w-0 border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-xl p-4 sm:p-6 space-y-6 bg-white dark:bg-[#1E1F20]">
       <h2 className="text-sm font-semibold text-[#1E1F20] dark:text-white">
         Expense Details
       </h2>
 
-      {/* Amount */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-[#1E1F20] dark:text-white">
           Amount <span className="text-red-500">*</span>
         </label>
         <div className="flex items-center border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-gray-900/10 dark:focus-within:ring-white/10 focus-within:border-[#0A0A0A]/50 dark:focus-within:border-[#505050] transition">
           <span className="px-3 text-sm text-[#707375] dark:text-[#A0A0A0] border-r border-[#ECEDEE] dark:border-[#2E2E2E] py-2.5 bg-gray-50 dark:bg-[#252525] select-none">
-            $
+            {symbol}
           </span>
           <input
             type="number"
@@ -45,7 +48,6 @@ export default function ExpenseDetails({
         </div>
       </div>
 
-      {/* Category */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-[#1E1F20] dark:text-white">
           Category <span className="text-red-500">*</span>
@@ -67,7 +69,6 @@ export default function ExpenseDetails({
         </div>
       </div>
 
-      {/* Note */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-[#1E1F20] dark:text-white">
           Note (optional)

@@ -1,6 +1,7 @@
 import { Pencil } from "lucide-react";
 import { Product, getStockStatus } from "../types";
 import StatusBadge from "../components/StatusBadge";
+import { useCurrency } from "@/lib/currency-context";
 
 interface InventoryCardProps {
   product: Product;
@@ -13,6 +14,7 @@ export default function InventoryCard({
   onEdit,
   onAddStock,
 }: InventoryCardProps) {
+  const { format } = useCurrency();
   const status = getStockStatus(product.stock);
   const stockColor =
     status === "out_of_stock" ? "text-red-500 dark:text-red-400"
@@ -31,7 +33,7 @@ export default function InventoryCard({
               {product.name}
             </p>
             <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
-              ${product.price.toFixed(2)} per unit
+              {format(product.price)} per unit
             </p>
           </div>
         </div>

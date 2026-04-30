@@ -12,6 +12,17 @@ async function fetchProductsFromAPI(): Promise<Product[]> {
   return res.json();
 }
 
+function Loader() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+      <div className="w-5 h-5 rounded-full border-2 border-neutral-200 dark:border-[#2E2E2E] border-t-neutral-900 dark:border-t-white animate-spin" />
+      <p className="text-xs text-neutral-400 dark:text-[#A0A0A0]">
+        Loading inventory…
+      </p>
+    </div>
+  );
+}
+
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
 
@@ -23,9 +34,7 @@ export default function InventoryPage() {
     loadProducts();
     return (
       <PageContainer>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-6 h-6 border-2 border-[#1E1F20] dark:border-white border-t-transparent rounded-full animate-spin" />
-        </div>
+        <Loader />
       </PageContainer>
     );
   }

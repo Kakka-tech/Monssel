@@ -1,10 +1,10 @@
 "use client";
 
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useCurrency } from "@/lib/currency-context";
 
 type IconType = "box" | "bolt" | "briefcase";
 type TransactionType = "Income" | "Expense";
-
 type TransactionItem = {
   title: string;
   type: TransactionType;
@@ -17,12 +17,7 @@ export default function RecentTransactions() {
     { title: "Product Name", type: "Income", amount: 180, icon: "box" },
     { title: "Electricity Bill", type: "Expense", amount: 50, icon: "bolt" },
     { title: "Product Name", type: "Income", amount: 290, icon: "box" },
-    {
-      title: "Supplier Payment",
-      type: "Expense",
-      amount: 120,
-      icon: "briefcase",
-    },
+    { title: "Supplier Payment", type: "Expense", amount: 120, icon: "briefcase" },
     { title: "Product Name", type: "Income", amount: 450, icon: "box" },
   ];
 
@@ -36,13 +31,11 @@ export default function RecentTransactions() {
           Latest income & expenses
         </p>
       </div>
-
       <div className="flex flex-col gap-3 overflow-y-auto flex-1 pr-1">
         {transactions.map((tx, index) => (
           <Transaction key={index} {...tx} />
         ))}
       </div>
-
       <button className="mt-6 bg-[#11181C] dark:bg-white text-white dark:text-[#121212] py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-800 dark:hover:bg-gray-200 transition">
         View All Transactions
       </button>
@@ -51,28 +44,12 @@ export default function RecentTransactions() {
 }
 
 function Transaction({ title, type, amount, icon }: TransactionItem) {
-  const iconMap: Record<
-    IconType,
-    { bg: string; darkBg: string; color: string; emoji: string }
-  > = {
-    box: {
-      bg: "bg-blue-100",
-      darkBg: "dark:bg-blue-950/40",
-      color: "text-blue-600",
-      emoji: "📦",
-    },
-    bolt: {
-      bg: "bg-pink-100",
-      darkBg: "dark:bg-pink-950/40",
-      color: "text-pink-600",
-      emoji: "⚡",
-    },
-    briefcase: {
-      bg: "bg-yellow-100",
-      darkBg: "dark:bg-yellow-950/40",
-      color: "text-yellow-600",
-      emoji: "💼",
-    },
+  const { format } = useCurrency();
+
+  const iconMap: Record<IconType, { bg: string; darkBg: string; color: string; emoji: string }> = {
+    box: { bg: "bg-blue-100", darkBg: "dark:bg-blue-950/40", color: "text-blue-600", emoji: "📦" },
+    bolt: { bg: "bg-pink-100", darkBg: "dark:bg-pink-950/40", color: "text-pink-600", emoji: "⚡" },
+    briefcase: { bg: "bg-yellow-100", darkBg: "dark:bg-yellow-950/40", color: "text-yellow-600", emoji: "💼" },
   };
 
   const isIncome = type === "Income";
@@ -81,25 +58,17 @@ function Transaction({ title, type, amount, icon }: TransactionItem) {
   return (
     <div className="flex items-center justify-between bg-[#FAFAFA] dark:bg-[#252525] border border-[#ECEDEE] dark:border-[#2E2E2E] p-3 rounded-lg">
       <div className="flex items-center gap-3">
-        <div
-          className={`w-10 h-10 flex items-center justify-center rounded-lg ${bg} ${darkBg}`}
-        >
+        <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${bg} ${darkBg}`}>
           <span className={`text-lg ${color}`}>{emoji}</span>
         </div>
         <div>
-          <p className="text-sm font-medium text-neutral-900 dark:text-white">
-            {title}
-          </p>
+          <p className="text-sm font-medium text-neutral-900 dark:text-white">{title}</p>
           <p className="text-xs text-neutral-500 dark:text-[#A0A0A0]">{type}</p>
         </div>
       </div>
-      <div
-        className={`flex items-center gap-1 text-sm font-medium ${isIncome ? "text-[#43B75D]" : "text-[#FC4736]"}`}
-      >
-        {isIncome ? `+$${amount.toFixed(2)}` : `-$${amount.toFixed(2)}`}
-        {isIncome ?
-          <ArrowUpRight size={14} />
-        : <ArrowDownRight size={14} />}
+      <div className={`flex items-center gap-1 text-sm font-medium ${isIncome ? "text-[#43B75D]" : "text-[#FC4736]"}`}>
+        {isIncome ? `+${format(amount)}` : `-${format(amount)}`}
+        {isIncome ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
       </div>
     </div>
   );

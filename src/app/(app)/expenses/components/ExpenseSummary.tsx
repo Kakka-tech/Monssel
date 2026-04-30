@@ -1,7 +1,9 @@
 "use client";
+
 import { useState } from "react";
 import { Receipt, X } from "lucide-react";
 import { ExpenseCategory } from "../types";
+import { useCurrency } from "@/lib/currency-context";
 
 interface ExpenseSummaryProps {
   amount: number;
@@ -20,6 +22,7 @@ export default function ExpenseSummary({
   onSave,
   onCancel,
 }: ExpenseSummaryProps) {
+  const { format } = useCurrency();
   const [showTip, setShowTip] = useState(true);
 
   return (
@@ -32,7 +35,7 @@ export default function ExpenseSummary({
           <div className="flex justify-between text-[#707375] dark:text-[#A0A0A0]">
             <span>Amount</span>
             <span className="text-[#1E1F20] dark:text-white font-medium">
-              ${amount.toFixed(2)}
+              {format(amount)}
             </span>
           </div>
           <div className="flex justify-between text-[#707375] dark:text-[#A0A0A0]">
@@ -46,7 +49,7 @@ export default function ExpenseSummary({
               Total Expense
             </span>
             <span className="font-semibold text-red-500 dark:text-red-400">
-              ${amount.toFixed(2)}
+              {format(amount)}
             </span>
           </div>
         </div>

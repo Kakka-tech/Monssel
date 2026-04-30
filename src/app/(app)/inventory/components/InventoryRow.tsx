@@ -1,6 +1,7 @@
 import { Pencil } from "lucide-react";
 import { Product, getStockStatus } from "../types";
 import StatusBadge from "../components/StatusBadge";
+import { useCurrency } from "@/lib/currency-context";
 
 interface InventoryRowProps {
   product: Product;
@@ -13,6 +14,7 @@ export default function InventoryRow({
   onEdit,
   onAddStock,
 }: InventoryRowProps) {
+  const { format } = useCurrency();
   const status = getStockStatus(product.stock);
   const stockColor =
     status === "out_of_stock" ? "text-red-500 dark:text-red-400"
@@ -41,7 +43,7 @@ export default function InventoryRow({
       </td>
       <td className="py-3.5 px-4">
         <span className="text-sm text-[#1E1F20] dark:text-white">
-          ${product.price.toFixed(2)}
+          {format(product.price)}
         </span>
       </td>
       <td className="py-3.5 px-4">

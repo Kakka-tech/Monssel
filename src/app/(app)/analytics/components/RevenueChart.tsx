@@ -1,4 +1,5 @@
 "use client";
+
 import {
   AreaChart,
   Area,
@@ -10,6 +11,7 @@ import {
 } from "recharts";
 import { useTheme } from "next-themes";
 import { ChartDataPoint } from "../types";
+import { useCurrency } from "@/lib/currency-context";
 
 const DATA: ChartDataPoint[] = [
   { month: "Jan", sales: 28000, expenses: 18000, profit: 10000 },
@@ -20,20 +22,20 @@ const DATA: ChartDataPoint[] = [
   { month: "Jun", sales: 45600, expenses: 26300, profit: 19300 },
 ];
 
-function formatY(value: number) {
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
-  return `$${value}`;
-}
-
 export default function RevenueChart() {
   const { resolvedTheme } = useTheme();
+  const { symbol } = useCurrency();
   const dark = resolvedTheme === "dark";
-
   const tickColor = dark ? "#A0A0A0" : "#707375";
   const gridColor = dark ? "#2E2E2E" : "#F3F4F6";
   const tooltipBg = dark ? "#1E1F20" : "#ffffff";
   const tooltipBorder = dark ? "#2E2E2E" : "#ECEDEE";
   const tooltipText = dark ? "#ffffff" : "#1E1F20";
+
+  const formatY = (value: number) => {
+    if (value >= 1000) return `${symbol}${(value / 1000).toFixed(0)}k`;
+    return `${symbol}${value}`;
+  };
 
   return (
     <div className="bg-white dark:bg-[#1E1F20] border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-xl p-5 space-y-1">
@@ -82,7 +84,7 @@ export default function RevenueChart() {
             />
             <Tooltip
               formatter={(value: number | undefined) => [
-                `$${(value ?? 0).toLocaleString()}`,
+                `${symbol}${(value ?? 0).toLocaleString()}`,
                 "",
               ]}
               contentStyle={{
