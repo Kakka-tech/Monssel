@@ -1,30 +1,47 @@
 "use client";
+
 import { useState } from "react";
 
-interface AddProductFormData {
-  name: string;
-  price: string;
-  stock: string;
-}
-
 interface AddProductFormProps {
-  onSubmit: (data: AddProductFormData) => void;
+  onSuccess: () => void;
   onCancel: () => void;
 }
 
 export default function AddProductForm({
-  onSubmit,
+  onSuccess,
   onCancel,
 }: AddProductFormProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isValid = name.trim() !== "" && price !== "" && stock !== "";
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isValid) return;
-    onSubmit({ name: name.trim(), price, stock });
+    setError(null);
+    setSubmitting(true);
+
+    const res = await fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: name.trim(),
+        price: parseFloat(price),
+        stock: parseInt(stock),
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Failed to add product");
+      setSubmitting(false);
+      return;
+    }
+
+    onSuccess();
   };
 
   const inputClass =
@@ -35,6 +52,12 @@ export default function AddProductForm({
       <h2 className="text-base font-semibold text-[#1E1F20] dark:text-white">
         Add New Product
       </h2>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2.5">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-[#1E1F20] dark:text-white">
@@ -81,13 +104,14 @@ export default function AddProductForm({
       <div className="flex items-center gap-3 pt-1">
         <button
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!isValid || submitting}
           className="bg-gray-900 dark:bg-white text-white dark:text-[#121212] text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add Product
+          {submitting ? "Adding..." : "Add Product"}
         </button>
         <button
           onClick={onCancel}
+          disabled={submitting}
           className="text-sm text-[#707375] dark:text-[#A0A0A0] hover:text-[#1E1F20] dark:hover:text-white transition-colors px-2 py-2.5"
         >
           Cancel

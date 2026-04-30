@@ -1,41 +1,40 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useCallback } from "react";
 import PageContainer from "@/components/layout/PageContainer";
 import InventoryOnboarding from "./components/InventoryOnboarding";
 import InventoryFull from "./components/InventoryFull";
+import { Product } from "./types";
+
+async function fetchProductsFromAPI(): Promise<Product[]> {
+  const res = await fetch("/api/products");
+  if (!res.ok) return [];
+  return res.json();
+}
 
 export default function InventoryPage() {
-  // Replace with real product data from your backend
-  const [hasProducts, setHasProducts] = useState(false);
+  const [products, setProducts] = useState<Product[] | null>(null);
 
-  const handleProductAdded = (data: { name: string; price: string; stock: string }) => {
-    // TODO: persist to backend, then refresh product list
-    console.log("Product added:", data);
-    setHasProducts(true);
-  };
+  const loadProducts = useCallback(() => {
+    fetchProductsFromAPI().then(setProducts);
+  }, []);
 
-  const handleAddProduct = () => {
-    // TODO: open add-product modal/drawer from the full view
-  };
+  if (products === null) {
+    loadProducts();
+    return (
+      <PageContainer>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-6 h-6 border-2 border-[#1E1F20] dark:border-white border-t-transparent rounded-full animate-spin" />
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
-      {hasProducts ? (
-        <InventoryFull onAddProduct={handleAddProduct} />
-      ) : (
-        <InventoryOnboarding onProductAdded={handleProductAdded} />
-      )}
+      {products.length === 0 ?
+        <InventoryOnboarding onProductAdded={loadProducts} />
+      : <InventoryFull products={products} onRefresh={loadProducts} />}
     </PageContainer>
   );
 }
-
-// export default function InventoryPage() {
-//   const handleAddProduct = () => {
-//     // TODO: open add-product modal/drawer from the full view
-//   };
-//   return (
-//     <PageContainer>
-//       <InventoryFull onAddProduct={handleAddProduct} />
-//     </PageContainer>
-//   );
-// } // For testing the full view without onboarding

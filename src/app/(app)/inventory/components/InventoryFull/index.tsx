@@ -1,32 +1,60 @@
 "use client";
+
 import { useState } from "react";
 import { Product } from "../../types";
 import InventoryTable from "../InventoryTable";
-
-const MOCK_PRODUCTS: Product[] = [
-  { id: "1", name: "Laptop Stand", price: 45, stock: 5 },
-  { id: "2", name: "Wireless Mouse", price: 25, stock: 2 },
-  { id: "3", name: "USB-C Cable", price: 12, stock: 15 },
-  { id: "4", name: "Notebook", price: 8, stock: 8 },
-  { id: "5", name: "Mechanical Keyboard", price: 120, stock: 0 },
-];
+import AddProductForm from "../AddProductForm";
 
 interface InventoryFullProps {
-  onAddProduct: () => void;
+  products: Product[];
+  onRefresh: () => void;
 }
 
-export default function InventoryFull({ onAddProduct }: InventoryFullProps) {
-  const [products] = useState<Product[]>(MOCK_PRODUCTS);
+export default function InventoryFull({
+  products,
+  onRefresh,
+}: InventoryFullProps) {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addingStock, setAddingStock] = useState<Product | null>(null);
+  const [stockAmount, setStockAmount] = useState("");
+  const [stockLoading, setStockLoading] = useState(false);
+  const [stockError, setStockError] = useState<string | null>(null);
 
-  const handleEdit = (product: Product) => {
-    // TODO: open edit modal/drawer
-    console.log("Edit:", product);
+  const handleAddStock = async () => {
+    if (!addingStock || !stockAmount) return;
+    setStockLoading(true);
+    setStockError(null);
+
+    const res = await fetch(`/api/products/${addingStock.id}/stock`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: parseInt(stockAmount) }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setStockError(data.error ?? "Failed to update stock");
+      setStockLoading(false);
+      return;
+    }
+
+    setAddingStock(null);
+    setStockAmount("");
+    setStockLoading(false);
+    onRefresh();
   };
 
-  const handleAddStock = (product: Product) => {
-    // TODO: open add-stock modal/drawer
-    console.log("Add stock:", product);
-  };
+  if (showAddForm) {
+    return (
+      <AddProductForm
+        onSuccess={() => {
+          setShowAddForm(false);
+          onRefresh();
+        }}
+        onCancel={() => setShowAddForm(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -35,18 +63,67 @@ export default function InventoryFull({ onAddProduct }: InventoryFullProps) {
           Inventory
         </h1>
         <button
-          onClick={onAddProduct}
-          className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-[#121212] text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+          onClick={() => setShowAddForm(true)}
+          className="flex items-center gap-2 bg-[#1E1F20] dark:bg-white text-white dark:text-[#121212] text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
         >
           <span className="text-base leading-none">+</span>
           Add Product
         </button>
       </div>
+
       <InventoryTable
         products={products}
-        onEdit={handleEdit}
-        onAddStock={handleAddStock}
+        onEdit={(product) => console.log("Edit:", product)}
+        onAddStock={(product) => {
+          setAddingStock(product);
+          setStockAmount("");
+          setStockError(null);
+        }}
       />
+
+      {addingStock && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-white dark:bg-[#1C1C1C] border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-2xl p-6 space-y-4 shadow-2xl">
+            <h2 className="text-sm font-semibold text-[#1E1F20] dark:text-white">
+              Add Stock — {addingStock.name}
+            </h2>
+            <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
+              Current stock: {addingStock.stock} units
+            </p>
+
+            {stockError && (
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2">
+                {stockError}
+              </div>
+            )}
+
+            <input
+              type="number"
+              min={1}
+              placeholder="Units to add"
+              value={stockAmount}
+              onChange={(e) => setStockAmount(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-white/10 bg-white dark:bg-[#252525] text-[#1E1F20] dark:text-white placeholder:text-[#1E1F20]/40 dark:placeholder:text-white/30"
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleAddStock}
+                disabled={!stockAmount || stockLoading}
+                className="flex-1 bg-[#1E1F20] dark:bg-white text-white dark:text-[#121212] text-sm font-medium py-2.5 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                {stockLoading ? "Updating..." : "Add Stock"}
+              </button>
+              <button
+                onClick={() => setAddingStock(null)}
+                className="flex-1 border border-[#ECEDEE] dark:border-[#2E2E2E] text-sm text-[#707375] dark:text-[#A0A0A0] py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

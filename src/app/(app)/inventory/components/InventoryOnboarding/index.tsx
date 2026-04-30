@@ -1,14 +1,11 @@
 "use client";
+
 import { useState } from "react";
 import { Package } from "lucide-react";
 import AddProductForm from "../AddProductForm";
 
 interface InventoryOnboardingProps {
-  onProductAdded: (data: {
-    name: string;
-    price: string;
-    stock: string;
-  }) => void;
+  onProductAdded: () => void;
 }
 
 export default function InventoryOnboarding({
@@ -19,8 +16,8 @@ export default function InventoryOnboarding({
   if (showForm) {
     return (
       <AddProductForm
-        onSubmit={(data) => {
-          onProductAdded(data);
+        onSuccess={() => {
+          onProductAdded();
           setShowForm(false);
         }}
         onCancel={() => setShowForm(false)}
