@@ -16,5 +16,5 @@ export interface Expense {
   amount: number;
   category: ExpenseCategory;
   note?: string;
-  createdAt: string;
+  created_at: string;
 }
