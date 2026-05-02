@@ -5,45 +5,52 @@ import { Product, RecentSale } from "../../types";
 import ProductSelector from "../../components/ProductSelector";
 import SaleForm from "../../components/SaleForm";
 import SaleSummary from "../../components/SalesSummary";
+import { useFetch } from "@/lib/usefetch";
 
-const MOCK_PRODUCTS: Product[] = [
-  { id: "1", name: "Nike Air Max", price: 100, stock: 5 },
-  { id: "2", name: "Adidas Ultra Boost", price: 180, stock: 12 },
-  { id: "3", name: "Jordan 1 Retro", price: 250, stock: 2 },
-];
+interface RecordSalesFullProps {
+  products: Product[];
+  onSaleRecorded: () => void;
+}
 
-const MOCK_RECENT_SALES: RecentSale[] = [
-  {
-    id: "s1",
-    productName: "Nike Air Max",
-    quantity: 2,
-    total: 200,
-    date: "Today, 2:30 PM",
-  },
-  {
-    id: "s2",
-    productName: "Jordan 1 Retro",
-    quantity: 1,
-    total: 250,
-    date: "Today, 11:00 AM",
-  },
-  {
-    id: "s3",
-    productName: "Adidas Ultra Boost",
-    quantity: 3,
-    total: 540,
-    date: "Yesterday, 4:30 PM",
-  },
-];
+interface RawSale {
+  id: string;
+  product_name: string;
+  quantity: number;
+  total: number;
+  created_at: string;
+}
 
-export default function RecordSalesFull() {
+function mapSale(s: RawSale): RecentSale {
+  return {
+    id: s.id,
+    productName: s.product_name,
+    quantity: s.quantity,
+    total: s.total,
+    date: new Date(s.created_at).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }),
+  };
+}
+
+export default function RecordSalesFull({
+  products,
+  onSaleRecorded,
+}: RecordSalesFullProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(
-    MOCK_PRODUCTS[0],
+    products[0] ?? null,
   );
   const [quantityRaw, setQuantityRaw] = useState<string>("");
   const [customPrice, setCustomPrice] = useState<string>("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data: rawSales, refetch: refetchSales } =
+    useFetch<RawSale[]>("/api/sales?limit=5");
+  const recentSales: RecentSale[] = rawSales ? rawSales.map(mapSale) : [];
 
   const quantity = parseInt(quantityRaw) || 1;
   const qtyExceedsStock =
@@ -61,16 +68,38 @@ export default function RecordSalesFull() {
     setSelectedProduct(product);
     setQuantityRaw("");
     setCustomPrice("");
+    setError(null);
   };
 
   const handleSave = async () => {
     if (!selectedProduct || qtyExceedsStock) return;
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
+    setError(null);
+
+    const res = await fetch("/api/sales", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id: selectedProduct.id,
+        quantity,
+        price: effectivePrice,
+        note: note || null,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Failed to record sale");
+      setSaving(false);
+      return;
+    }
+
     setQuantityRaw("");
     setCustomPrice("");
     setNote("");
+    setSaving(false);
+    refetchSales();
+    onSaleRecorded();
   };
 
   const handleCancel = () => {
@@ -78,6 +107,7 @@ export default function RecordSalesFull() {
     setQuantityRaw("");
     setCustomPrice("");
     setNote("");
+    setError(null);
   };
 
   return (
@@ -86,10 +116,16 @@ export default function RecordSalesFull() {
         Record Sale
       </h1>
 
+      {error && (
+        <div className="mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2.5">
+          {error}
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="w-full flex-1 min-w-0 space-y-5">
           <ProductSelector
-            products={MOCK_PRODUCTS}
+            products={products}
             selectedProduct={selectedProduct}
             onSelect={handleSelectProduct}
           />
@@ -112,7 +148,7 @@ export default function RecordSalesFull() {
           total={total}
           saving={saving}
           qtyExceedsStock={qtyExceedsStock}
-          recentSales={MOCK_RECENT_SALES}
+          recentSales={recentSales}
           onSave={handleSave}
           onCancel={handleCancel}
         />
