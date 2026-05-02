@@ -1,35 +1,50 @@
+"use client";
+
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { StatCard } from "../types";
 import { useCurrency } from "@/lib/currency-context";
 
-const STATS: StatCard[] = [
-  {
-    label: "Total Sales",
-    value: 215600,
-    change: "+12.5% from last period",
-    changePositive: true,
-  },
-  {
-    label: "Total Expenses",
-    value: 86300,
-    change: "+8.5% from last period",
-    changePositive: false,
-  },
-  {
-    label: "Net Profit",
-    value: 129300,
-    change: "+60.0% profit margin",
-    changePositive: true,
-    highlight: true,
-  },
-];
+interface StatCardsProps {
+  totalSales: number;
+  totalExpenses: number;
+  netProfit: number;
+  profitMargin: number;
+}
 
-export default function StatCards() {
+export default function StatCards({
+  totalSales,
+  totalExpenses,
+  netProfit,
+  profitMargin,
+}: StatCardsProps) {
   const { format } = useCurrency();
+
+  const stats = [
+    {
+      label: "Total Sales",
+      value: totalSales,
+      change: "All time",
+      changePositive: true,
+      highlight: false,
+    },
+    {
+      label: "Total Expenses",
+      value: totalExpenses,
+      change: "All time",
+      changePositive: false,
+      highlight: false,
+    },
+    {
+      label: "Net Profit",
+      value: netProfit,
+      change: `${profitMargin}% profit margin`,
+      changePositive: netProfit >= 0,
+      highlight: true,
+    },
+  ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {STATS.map((stat) => (
+      {stats.map((stat) => (
         <div
           key={stat.label}
           className={`rounded-xl p-5 border ${

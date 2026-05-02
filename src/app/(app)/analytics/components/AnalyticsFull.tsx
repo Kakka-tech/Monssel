@@ -1,13 +1,51 @@
 "use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useFetch } from "@/lib/usefetch";
+import { AnalyticsData, QuickMetric } from "../types";
 import StatCards from "./StatCards";
 import RevenueChart from "./RevenueChart";
 import ProfitChart from "./ProfitChart";
 import QuickMetrics from "./QuickMetrics";
 import StockAlerts from "./StockAlerts";
-import { useRouter } from "next/navigation";
+
+function AnalyticsSkeleton() {
+  return (
+    <div className="space-y-5 animate-pulse">
+      <div className="flex items-center justify-between">
+        <div className="h-8 w-28 bg-gray-200 dark:bg-[#2E2E2E] rounded-lg" />
+        <div className="h-10 w-28 bg-gray-200 dark:bg-[#2E2E2E] rounded-lg" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-28 bg-gray-200 dark:bg-[#2E2E2E] rounded-xl"
+          />
+        ))}
+      </div>
+      <div className="flex flex-col xl:flex-row gap-5">
+        <div className="flex-1 space-y-5">
+          <div className="h-64 bg-gray-200 dark:bg-[#2E2E2E] rounded-xl" />
+          <div className="h-64 bg-gray-200 dark:bg-[#2E2E2E] rounded-xl" />
+        </div>
+        <div className="w-full xl:w-64 space-y-4">
+          <div className="h-44 bg-gray-200 dark:bg-[#2E2E2E] rounded-xl" />
+          <div className="h-64 bg-gray-200 dark:bg-[#2E2E2E] rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AnalyticsFull() {
   const router = useRouter();
+  const { data, loading } = useFetch<AnalyticsData>("/api/analytics");
+  const [activeMetric, setActiveMetric] = useState<QuickMetric | "All">("All");
+
+  if (loading || data === null) return <AnalyticsSkeleton />;
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -22,15 +60,25 @@ export default function AnalyticsFull() {
           Add Note
         </button>
       </div>
-      <StatCards />
+
+      <StatCards
+        totalSales={data.stats.totalSales}
+        totalExpenses={data.stats.totalExpenses}
+        netProfit={data.stats.netProfit}
+        profitMargin={data.stats.profitMargin}
+      />
+
       <div className="flex flex-col xl:flex-row gap-5 items-start">
         <div className="w-full xl:flex-1 space-y-5">
-          <RevenueChart />
-          <ProfitChart />
+          <RevenueChart data={data.chartData} activeMetric={activeMetric} />
+          <ProfitChart data={data.chartData} />
         </div>
         <div className="w-full xl:w-64 shrink-0 space-y-4">
-          <QuickMetrics />
-          <StockAlerts onViewAll={() => router.push("/inventory")} />
+          <QuickMetrics active={activeMetric} onSelect={setActiveMetric} />
+          <StockAlerts
+            alerts={data.stockAlerts}
+            onViewAll={() => router.push("/inventory")}
+          />
         </div>
       </div>
     </div>

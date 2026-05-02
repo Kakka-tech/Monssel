@@ -3,7 +3,6 @@ export interface StatCard {
   value: number;
   change: string;
   changePositive: boolean;
-  sub?: string;
   highlight?: boolean;
 }
 
@@ -22,3 +21,14 @@ export interface StockAlertProduct {
 }
 
 export type QuickMetric = "Sales" | "Expenses" | "Profit";
+
+export interface AnalyticsData {
+  stats: {
+    totalSales: number;
+    totalExpenses: number;
+    netProfit: number;
+    profitMargin: number;
+  };
+  chartData: ChartDataPoint[];
+  stockAlerts: StockAlertProduct[];
+}
