@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useMemo } from "react";
 import { Note, NoteCategory } from "../types";
 import NotesStats from "./NotesStats";
@@ -6,45 +7,13 @@ import NotesFilter from "./NotesFilter";
 import NoteCard from "./NoteCard";
 import AddNoteModal from "./AddNoteModal";
 
-const MOCK_NOTES: Note[] = [
-  {
-    id: "1",
-    content:
-      "Customer John Doe requested bulk discount for next order – follow up by Friday",
-    category: "Customer",
-    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-  },
-  {
-    id: "2",
-    content:
-      "Supplier ABC Corp delayed shipment of electronics. Expected arrival: next Tuesday",
-    category: "Supplier",
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: "3",
-    content:
-      "Sales peak observed during weekend evenings. Consider adjusting staff schedule",
-    category: "Observation",
-    createdAt: new Date(Date.now() - 16 * 60 * 60 * 1000),
-  },
-  {
-    id: "4",
-    content: "Low stock alert for Product X. Reorder 50 units from supplier",
-    category: "Supplier",
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-  {
-    id: "5",
-    content:
-      "Customer feedback: packaging needs improvement. Research eco-friendly options",
-    category: "Customer",
-    createdAt: new Date(Date.now() - 34 * 60 * 60 * 1000),
-  },
-];
+interface NotesFullProps {
+  notes: Note[];
+  onAdd: (note: Note) => void;
+  onDelete: (id: string) => void;
+}
 
-export default function NotesFull() {
-  const [notes, setNotes] = useState<Note[]>(MOCK_NOTES);
+export default function NotesFull({ notes, onAdd, onDelete }: NotesFullProps) {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<NoteCategory | "All">("All");
   const [showModal, setShowModal] = useState(false);
@@ -59,16 +28,6 @@ export default function NotesFull() {
       return matchesSearch && matchesFilter;
     });
   }, [notes, search, activeFilter]);
-
-  const handleAddNote = (content: string, category: NoteCategory) => {
-    const newNote: Note = {
-      id: Date.now().toString(),
-      content,
-      category,
-      createdAt: new Date(),
-    };
-    setNotes((prev) => [newNote, ...prev]);
-  };
 
   return (
     <>
@@ -94,16 +53,22 @@ export default function NotesFull() {
         <NotesStats notes={notes} />
         <div className="border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-xl px-4 divide-y divide-[#ECEDEE] dark:divide-[#2E2E2E]">
           {filtered.length > 0 ?
-            filtered.map((note) => <NoteCard key={note.id} note={note} />)
+            filtered.map((note) => (
+              <NoteCard key={note.id} note={note} onDelete={onDelete} />
+            ))
           : <p className="text-sm text-[#707375] dark:text-[#A0A0A0] text-center py-10">
               No notes match your search.
             </p>
           }
         </div>
       </div>
+
       {showModal && (
         <AddNoteModal
-          onAdd={handleAddNote}
+          onAdd={(note) => {
+            onAdd(note);
+            setShowModal(false);
+          }}
           onClose={() => setShowModal(false)}
         />
       )}
