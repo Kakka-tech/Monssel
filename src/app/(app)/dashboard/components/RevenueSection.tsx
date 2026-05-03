@@ -1,50 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { AreaChart, Area, XAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useCurrency } from "@/lib/currency-context";
 
 type RangeType = "weekly" | "monthly" | "yearly";
 
-const today = new Date();
-const userStartYear = 2026;
-const randomize = (base: number, variance: number) =>
-  base + Math.floor(Math.random() * variance - variance / 2);
+interface DataPoint {
+  label: string;
+  value: number;
+}
 
-const weeklyData = Array.from({ length: 4 }).map((_, i) => ({
-  label: `Week ${i + 1}`,
-  value: randomize(500 + i * 200, 150),
-}));
+interface RevenueSectionProps {
+  data: DataPoint[];
+}
 
-const currentMonth = today.toLocaleDateString("en-US", { month: "short" });
-const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-const monthlyData = Array.from({ length: 6 }).map((_, i) => {
-  const day = Math.floor((daysInMonth / 5) * i) + 1;
-  return { label: `${currentMonth} ${day}`, value: randomize(1000 + i * 300, 300) };
-});
-
-const yearlyData = Array.from({ length: 5 }).map((_, i) => ({
-  label: String(userStartYear + i),
-  value: randomize(3000 + i * 1500, 800),
-}));
-
-export default function RevenueSection() {
+export default function RevenueSection({ data }: RevenueSectionProps) {
   const { format } = useCurrency();
   const [range, setRange] = useState<RangeType>("monthly");
 
-  const getData = () => {
-    if (range === "weekly") return weeklyData;
-    if (range === "yearly") return yearlyData;
-    return monthlyData;
-  };
+  // For now range toggle filters the passed data visually
+  // (real range filtering can be added when API supports it)
+  const currentData = data.length > 0 ? data : [{ label: "—", value: 0 }];
 
-  const currentData = getData();
   const firstValue = currentData[0]?.value ?? 0;
   const lastValue = currentData[currentData.length - 1]?.value ?? 0;
   const isPositive = lastValue >= firstValue;
   const percentageChange =
-    firstValue === 0 ? 0 : (((lastValue - firstValue) / firstValue) * 100).toFixed(1);
+    firstValue === 0 ? 0 : (
+      (((lastValue - firstValue) / firstValue) * 100).toFixed(1)
+    );
   const trendColor = isPositive ? "#10B981" : "#EF4444";
   const total = currentData.reduce((a, b) => a + b.value, 0);
 
@@ -59,8 +51,12 @@ export default function RevenueSection() {
             <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white">
               {format(total)}
             </p>
-            <span className={`flex items-center gap-1 text-sm font-medium ${isPositive ? "text-green-600" : "text-red-600"}`}>
-              {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+            <span
+              className={`flex items-center gap-1 text-sm font-medium ${isPositive ? "text-green-600" : "text-red-600"}`}
+            >
+              {isPositive ?
+                <ArrowUpRight size={14} />
+              : <ArrowDownRight size={14} />}
               {Math.abs(Number(percentageChange))}%
             </span>
           </div>
@@ -73,9 +69,9 @@ export default function RevenueSection() {
                 key={item}
                 onClick={() => setRange(item)}
                 className={`px-3 sm:px-4 py-1.5 rounded-md transition-all duration-200 ${
-                  isActive
-                    ? "bg-neutral-900 dark:bg-white text-white dark:text-[#121212] shadow-sm"
-                    : "bg-neutral-100 dark:bg-[#252525] border border-[#E4E6E7] dark:border-[#2E2E2E] text-neutral-600 dark:text-[#A0A0A0] hover:bg-neutral-200 dark:hover:bg-[#2E2E2E]"
+                  isActive ?
+                    "bg-neutral-900 dark:bg-white text-white dark:text-[#121212] shadow-sm"
+                  : "bg-neutral-100 dark:bg-[#252525] border border-[#E4E6E7] dark:border-[#2E2E2E] text-neutral-600 dark:text-[#A0A0A0] hover:bg-neutral-200 dark:hover:bg-[#2E2E2E]"
                 }`}
               >
                 {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -93,8 +89,18 @@ export default function RevenueSection() {
                 <stop offset="95%" stopColor={trendColor} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 6" vertical horizontal={false} stroke="#2E2E2E" />
-            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "#A0A0A0", fontSize: 10 }} />
+            <CartesianGrid
+              strokeDasharray="3 6"
+              vertical
+              horizontal={false}
+              stroke="#2E2E2E"
+            />
+            <XAxis
+              dataKey="label"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#A0A0A0", fontSize: 10 }}
+            />
             <Area
               type="monotone"
               dataKey="value"
@@ -102,7 +108,12 @@ export default function RevenueSection() {
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorRevenue)"
-              activeDot={{ r: 5, stroke: trendColor, strokeWidth: 3, fill: "#ffffff" }}
+              activeDot={{
+                r: 5,
+                stroke: trendColor,
+                strokeWidth: 3,
+                fill: "#ffffff",
+              }}
             />
           </AreaChart>
         </ResponsiveContainer>
