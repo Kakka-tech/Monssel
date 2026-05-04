@@ -92,7 +92,7 @@ export default function RecentTransactions({
 
                   {/* Text */}
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-neutral-900 dark:text-white truncate max-w-[120px]">
+                    <p className="text-xs font-medium text-neutral-900 dark:text-white truncate max-w-30">
                       {tx.title}
                     </p>
                     <p className="text-[10px] text-neutral-500 dark:text-[#A0A0A0]">

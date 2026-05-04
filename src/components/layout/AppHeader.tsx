@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState, useSyncExternalStore, useEffect } from "react";
+import { useState, useSyncExternalStore, useEffect, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { Bell, PanelLeft } from "lucide-react";
 import Image from "next/image";
@@ -9,8 +9,6 @@ import { AnimatePresence } from "framer-motion";
 import NotificationPanel from "./NotificationPanel";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-
-const UNREAD_COUNT = 3;
 
 function subscribe(cb: () => void) {
   window.addEventListener("storage", cb);
@@ -33,10 +31,47 @@ export default function AppHeader() {
   );
   const [showNotifications, setShowNotifications] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
+  // Fetch user
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
+  }, []);
+
+  // Fetch initial unread count
+  useEffect(() => {
+    fetch("/api/notifications")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setUnreadCount(data.filter((n: { read: boolean }) => !n.read).length);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Supabase Realtime — listen for new notifications
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("notifications-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
+        () => {
+          setUnreadCount((prev) => prev + 1);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleUnreadChange = useCallback((count: number) => {
+    setUnreadCount(count);
   }, []);
 
   const logoSrc =
@@ -102,9 +137,9 @@ export default function AppHeader() {
               }`}
             >
               <Bell size={18} className="text-[#1E1F20] dark:text-white" />
-              {UNREAD_COUNT > 0 && (
+              {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
-                  {UNREAD_COUNT > 9 ? "9+" : UNREAD_COUNT}
+                  {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
             </button>
@@ -112,6 +147,7 @@ export default function AppHeader() {
               {showNotifications && (
                 <NotificationPanel
                   onClose={() => setShowNotifications(false)}
+                  onUnreadChange={handleUnreadChange}
                 />
               )}
             </AnimatePresence>

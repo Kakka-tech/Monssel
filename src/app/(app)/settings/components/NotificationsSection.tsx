@@ -1,18 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NotificationSettings } from "../types";
 import { Bell } from "lucide-react";
 import SettingsSection from "./SettingsSection";
 import Toggle from "./Toggle";
-
-const DEFAULTS: NotificationSettings = {
-  emailNotifications: true,
-  lowStockAlerts: true,
-  expenseNotifications: false,
-  weeklyReports: true,
-  marketingEmails: true,
-};
 
 const NOTIFICATION_ITEMS: {
   key: keyof NotificationSettings;
@@ -46,18 +38,69 @@ const NOTIFICATION_ITEMS: {
   },
 ];
 
+const DEFAULTS: NotificationSettings = {
+  emailNotifications: true,
+  lowStockAlerts: true,
+  expenseNotifications: false,
+  weeklyReports: true,
+  marketingEmails: true,
+};
+
 export default function NotificationsSection() {
   const [form, setForm] = useState<NotificationSettings>(DEFAULTS);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((profile) => {
+        if (profile) {
+          setForm({
+            emailNotifications: profile.notif_email ?? true,
+            lowStockAlerts: profile.notif_low_stock ?? true,
+            expenseNotifications: profile.notif_expenses ?? false,
+            weeklyReports: profile.notif_weekly_reports ?? true,
+            marketingEmails: profile.notif_marketing ?? true,
+          });
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const toggle = (key: keyof NotificationSettings) =>
     setForm((p) => ({ ...p, [key]: !p[key] }));
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
+    await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        notif_email: form.emailNotifications,
+        notif_low_stock: form.lowStockAlerts,
+        notif_expenses: form.expenseNotifications,
+        notif_weekly_reports: form.weeklyReports,
+        notif_marketing: form.marketingEmails,
+      }),
+    });
     setSaving(false);
   };
+
+  if (loading)
+    return (
+      <div className="space-y-3 animate-pulse">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex justify-between items-center py-3">
+            <div className="space-y-1">
+              <div className="h-3 w-32 bg-gray-200 dark:bg-[#2E2E2E] rounded" />
+              <div className="h-2 w-48 bg-gray-200 dark:bg-[#2E2E2E] rounded" />
+            </div>
+            <div className="h-6 w-10 bg-gray-200 dark:bg-[#2E2E2E] rounded-full" />
+          </div>
+        ))}
+      </div>
+    );
 
   return (
     <SettingsSection
