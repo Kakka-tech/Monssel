@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -28,7 +28,6 @@ const navItems = [
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
 
@@ -39,10 +38,6 @@ export default function AppSidebar() {
         "bg-[#ECEDEE] dark:bg-neutral-800 text-neutral-900 dark:text-white font-medium"
       : "text-neutral-600 dark:text-neutral-400 hover:bg-[#ECEDEE] dark:hover:bg-neutral-800"
     }`;
-  };
-
-  const handleLogout = () => {
-    router.push("/auth/login");
   };
 
   return (
@@ -64,13 +59,13 @@ export default function AppSidebar() {
 
       <aside
         className={`
-          fixed md:static top-0 left-0 h-full w-64
-          bg-[#FAFAFA] dark:bg-[#111113]
-          flex flex-col z-50
-          transform transition-transform duration-300
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
-        `}
+        fixed md:static top-0 left-0 h-full w-64
+        bg-[#FAFAFA] dark:bg-[#111113]
+        flex flex-col z-50
+        transform transition-transform duration-300
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        md:translate-x-0
+      `}
       >
         <div className="flex justify-between items-center p-4 md:hidden">
           <span className="font-semibold text-[#1E1F20] dark:text-white">
@@ -124,12 +119,7 @@ export default function AppSidebar() {
         </div>
       </aside>
 
-      {showLogout && (
-        <LogoutModal
-          onConfirm={handleLogout}
-          onCancel={() => setShowLogout(false)}
-        />
-      )}
+      {showLogout && <LogoutModal onCancel={() => setShowLogout(false)} />}
     </>
   );
 }

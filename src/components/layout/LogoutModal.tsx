@@ -1,14 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { LogOut, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 interface LogoutModalProps {
-  onConfirm: () => void;
   onCancel: () => void;
 }
 
-export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
+export default function LogoutModal({ onCancel }: LogoutModalProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+    router.refresh();
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -29,12 +42,7 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
             scale: 1,
             opacity: 1,
             y: 0,
-            transition: {
-              type: "spring",
-              stiffness: 400,
-              damping: 22,
-              mass: 0.8,
-            },
+            transition: { type: "spring", stiffness: 400, damping: 22, mass: 0.8 },
           }}
           exit={{
             scale: 0.9,
@@ -57,12 +65,7 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
             animate={{
               scale: 1,
               rotate: 0,
-              transition: {
-                type: "spring",
-                stiffness: 500,
-                damping: 18,
-                delay: 0.08,
-              },
+              transition: { type: "spring", stiffness: 500, damping: 18, delay: 0.08 },
             }}
           >
             <LogOut className="w-5 h-5 text-red-500 dark:text-red-400" />
@@ -71,11 +74,7 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
           <motion.div
             className="text-center space-y-1.5"
             initial={{ opacity: 0, y: 8 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              transition: { delay: 0.12, duration: 0.2 },
-            }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.12, duration: 0.2 } }}
           >
             <h2 className="text-base font-semibold text-[#1E1F20] dark:text-white">Log Out</h2>
             <p className="text-sm text-[#707375] dark:text-[#A0A0A0]">
@@ -87,23 +86,21 @@ export default function LogoutModal({ onConfirm, onCancel }: LogoutModalProps) {
           <motion.div
             className="flex gap-3"
             initial={{ opacity: 0, y: 8 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              transition: { delay: 0.16, duration: 0.2 },
-            }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.16, duration: 0.2 } }}
           >
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-2.5 text-sm font-medium border border-[#ECEDEE] dark:border-[#2E2E2E] text-[#1E1F20] dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors"
+              disabled={loading}
+              className="flex-1 px-4 py-2.5 text-sm font-medium border border-[#ECEDEE] dark:border-[#2E2E2E] text-[#1E1F20] dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
-              onClick={onConfirm}
-              className="flex-1 px-4 py-2.5 text-sm font-medium bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
+              onClick={handleConfirm}
+              disabled={loading}
+              className="flex-1 px-4 py-2.5 text-sm font-medium bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition-colors disabled:opacity-60"
             >
-              Log Out
+              {loading ? "Signing out..." : "Log Out"}
             </button>
           </motion.div>
         </motion.div>
