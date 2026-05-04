@@ -38,7 +38,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Fetch product
   const { data: product, error: fetchError } = await supabase
     .from("products")
     .select("id, name, stock")
@@ -56,13 +55,11 @@ export async function POST(request: Request) {
 
   const total = price * quantity;
 
-  // Run all operations in parallel
   const [
     { data: sale, error: saleError },
     { error: stockError },
     { error: movError },
   ] = await Promise.all([
-    // Insert sale
     supabase
       .from("sales")
       .insert({
@@ -77,14 +74,12 @@ export async function POST(request: Request) {
       .select()
       .single(),
 
-    // Deduct stock
     supabase
       .from("products")
       .update({ stock: product.stock - quantity })
       .eq("id", product_id)
       .eq("user_id", user.id),
 
-    // Log stock movement
     supabase.from("stock_movements").insert({
       user_id: user.id,
       product_id,
@@ -101,8 +96,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // Create sale notification (non-blocking)
-  supabase.from("notifications").insert({
+  await supabase.from("notifications").insert({
     user_id: user.id,
     type: "sale",
     title: "New Sale Recorded",
