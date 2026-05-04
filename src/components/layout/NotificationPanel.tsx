@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Package, TrendingUp, AlertTriangle, Receipt, StickyNote, Check, Trash2, X,
+  Package,
+  TrendingUp,
+  AlertTriangle,
+  Receipt,
+  StickyNote,
+  Check,
+  Trash2,
+  X,
 } from "lucide-react";
 
 export type NotificationType = "sale" | "stock" | "expense" | "note" | "alert";
@@ -18,11 +25,31 @@ export interface Notification {
 }
 
 const TYPE_CONFIG = {
-  sale:    { icon: <TrendingUp className="w-4 h-4" />,    bg: "bg-green-50 dark:bg-green-500/10",  color: "text-green-600 dark:text-green-400"  },
-  stock:   { icon: <AlertTriangle className="w-4 h-4" />, bg: "bg-amber-50 dark:bg-amber-500/10",  color: "text-amber-500 dark:text-amber-400"  },
-  expense: { icon: <Receipt className="w-4 h-4" />,       bg: "bg-red-50 dark:bg-red-500/10",      color: "text-red-500 dark:text-red-400"      },
-  note:    { icon: <StickyNote className="w-4 h-4" />,    bg: "bg-blue-50 dark:bg-blue-500/10",    color: "text-blue-500 dark:text-blue-400"    },
-  alert:   { icon: <Package className="w-4 h-4" />,       bg: "bg-purple-50 dark:bg-purple-500/10", color: "text-purple-500 dark:text-purple-400" },
+  sale: {
+    icon: <TrendingUp className="w-4 h-4" />,
+    bg: "bg-green-50 dark:bg-green-500/10",
+    color: "text-green-600 dark:text-green-400",
+  },
+  stock: {
+    icon: <AlertTriangle className="w-4 h-4" />,
+    bg: "bg-amber-50 dark:bg-amber-500/10",
+    color: "text-amber-500 dark:text-amber-400",
+  },
+  expense: {
+    icon: <Receipt className="w-4 h-4" />,
+    bg: "bg-red-50 dark:bg-red-500/10",
+    color: "text-red-500 dark:text-red-400",
+  },
+  note: {
+    icon: <StickyNote className="w-4 h-4" />,
+    bg: "bg-blue-50 dark:bg-blue-500/10",
+    color: "text-blue-500 dark:text-blue-400",
+  },
+  alert: {
+    icon: <Package className="w-4 h-4" />,
+    bg: "bg-purple-50 dark:bg-purple-500/10",
+    color: "text-purple-500 dark:text-purple-400",
+  },
 };
 
 function timeAgo(dateStr: string): string {
@@ -40,23 +67,35 @@ interface NotificationPanelProps {
   onUnreadChange: (count: number) => void;
 }
 
-export default function NotificationPanel({ onClose, onUnreadChange }: NotificationPanelProps) {
+export default function NotificationPanel({
+  onClose,
+  onUnreadChange,
+}: NotificationPanelProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchNotifications = useCallback(() => {
     fetch("/api/notifications")
       .then((r) => r.json())
       .then((data) => {
+        if (!Array.isArray(data)) return;
         setNotifications(data);
         onUnreadChange(data.filter((n: Notification) => !n.read).length);
       })
       .finally(() => setLoading(false));
   }, [onUnreadChange]);
 
+  // Fetch on open + poll every 10s while panel is open
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const displayed = filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
+  const displayed =
+    filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
 
   const markAllRead = async () => {
     await fetch("/api/notifications/read-all", { method: "PATCH" });
@@ -67,7 +106,7 @@ export default function NotificationPanel({ onClose, onUnreadChange }: Notificat
   const markRead = async (id: string) => {
     await fetch(`/api/notifications/${id}`, { method: "PATCH" });
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
     onUnreadChange(Math.max(0, unreadCount - 1));
   };
@@ -82,8 +121,8 @@ export default function NotificationPanel({ onClose, onUnreadChange }: Notificat
   const clearAll = async () => {
     await Promise.all(
       notifications.map((n) =>
-        fetch(`/api/notifications/${n.id}`, { method: "DELETE" })
-      )
+        fetch(`/api/notifications/${n.id}`, { method: "DELETE" }),
+      ),
     );
     setNotifications([]);
     onUnreadChange(0);
@@ -129,7 +168,10 @@ export default function NotificationPanel({ onClose, onUnreadChange }: Notificat
                 Mark all read
               </button>
             )}
-            <button onClick={onClose} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white">
+            <button
+              onClick={onClose}
+              className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -142,19 +184,21 @@ export default function NotificationPanel({ onClose, onUnreadChange }: Notificat
               key={tab}
               onClick={() => setFilter(tab)}
               className={`px-3 py-1 text-xs rounded-full ${
-                filter === tab
-                  ? "bg-black text-white dark:bg-white dark:text-black"
-                  : "text-neutral-500 hover:bg-neutral-100 dark:hover:bg-[#2A2A2A]"
+                filter === tab ?
+                  "bg-black text-white dark:bg-white dark:text-black"
+                : "text-neutral-500 hover:bg-neutral-100 dark:hover:bg-[#2A2A2A]"
               }`}
             >
-              {tab === "all" ? "All" : `Unread${unreadCount ? ` (${unreadCount})` : ""}`}
+              {tab === "all" ?
+                "All"
+              : `Unread${unreadCount ? ` (${unreadCount})` : ""}`}
             </button>
           ))}
         </div>
 
         {/* List */}
         <div className="flex-1 overflow-y-auto py-2">
-          {loading ? (
+          {loading ?
             <div className="space-y-3 px-4 py-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex gap-3 animate-pulse">
@@ -167,14 +211,12 @@ export default function NotificationPanel({ onClose, onUnreadChange }: Notificat
                 </div>
               ))}
             </div>
-          ) : (
-            <AnimatePresence initial={false}>
-              {displayed.length === 0 ? (
+          : <AnimatePresence initial={false}>
+              {displayed.length === 0 ?
                 <div className="text-center py-10 text-sm text-neutral-500 dark:text-neutral-400">
                   You&apos;re all caught up!
                 </div>
-              ) : (
-                displayed.map((n) => {
+              : displayed.map((n) => {
                   const { icon, bg, color } = TYPE_CONFIG[n.type];
                   return (
                     <motion.div
@@ -184,22 +226,33 @@ export default function NotificationPanel({ onClose, onUnreadChange }: Notificat
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
                       className={`flex gap-3 px-4 py-3 cursor-pointer ${
-                        n.read
-                          ? "hover:bg-neutral-50 dark:hover:bg-[#2A2A2A]"
-                          : "bg-blue-50/40 dark:bg-blue-500/10"
+                        n.read ?
+                          "hover:bg-neutral-50 dark:hover:bg-[#2A2A2A]"
+                        : "bg-blue-50/40 dark:bg-blue-500/10"
                       }`}
                       onClick={() => markRead(n.id)}
                     >
-                      <div className={`w-8 h-8 flex items-center justify-center rounded-full shrink-0 ${bg} ${color}`}>
+                      <div
+                        className={`w-8 h-8 flex items-center justify-center rounded-full shrink-0 ${bg} ${color}`}
+                      >
                         {icon}
                       </div>
                       <div className="flex-1 text-xs">
-                        <p className="font-medium text-neutral-900 dark:text-white">{n.title}</p>
-                        <p className="text-neutral-500 dark:text-neutral-400">{n.message}</p>
-                        <p className="text-[10px] text-neutral-400 mt-0.5">{timeAgo(n.created_at)}</p>
+                        <p className="font-medium text-neutral-900 dark:text-white">
+                          {n.title}
+                        </p>
+                        <p className="text-neutral-500 dark:text-neutral-400">
+                          {n.message}
+                        </p>
+                        <p className="text-[10px] text-neutral-400 mt-0.5">
+                          {timeAgo(n.created_at)}
+                        </p>
                       </div>
                       <button
-                        onClick={(e) => { e.stopPropagation(); remove(n.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          remove(n.id);
+                        }}
                         className="text-neutral-400 hover:text-red-500 shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -207,9 +260,9 @@ export default function NotificationPanel({ onClose, onUnreadChange }: Notificat
                     </motion.div>
                   );
                 })
-              )}
+              }
             </AnimatePresence>
-          )}
+          }
         </div>
 
         {notifications.length > 0 && (

@@ -1,10 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function DELETE(
-  _: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -12,15 +9,13 @@ export async function DELETE(
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id } = await params;
-
   const { error } = await supabase
-    .from("expenses")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
+    .from("notifications")
+    .update({ read: true })
+    .eq("user_id", user.id)
+    .eq("read", false);
 
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
-  return new NextResponse(null, { status: 204 });
+  return NextResponse.json({ success: true });
 }
