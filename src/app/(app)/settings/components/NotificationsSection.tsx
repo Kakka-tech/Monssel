@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NotificationSettings } from "../types";
 import { Bell } from "lucide-react";
+import { useFetch } from "@/lib/usefetch";
 import SettingsSection from "./SettingsSection";
 import Toggle from "./Toggle";
 
@@ -46,34 +47,46 @@ const DEFAULTS: NotificationSettings = {
   marketingEmails: true,
 };
 
+interface ProfileResponse {
+  notif_email: boolean;
+  notif_low_stock: boolean;
+  notif_expenses: boolean;
+  notif_weekly_reports: boolean;
+  notif_marketing: boolean;
+}
+
+function mapProfileToForm(profile: ProfileResponse): NotificationSettings {
+  return {
+    emailNotifications: profile.notif_email ?? DEFAULTS.emailNotifications,
+    lowStockAlerts: profile.notif_low_stock ?? DEFAULTS.lowStockAlerts,
+    expenseNotifications:
+      profile.notif_expenses ?? DEFAULTS.expenseNotifications,
+    weeklyReports: profile.notif_weekly_reports ?? DEFAULTS.weeklyReports,
+    marketingEmails: profile.notif_marketing ?? DEFAULTS.marketingEmails,
+  };
+}
+
 export default function NotificationsSection() {
-  const [form, setForm] = useState<NotificationSettings>(DEFAULTS);
+  const { data: profile, loading } = useFetch<ProfileResponse>("/api/profile");
+
+  const [overrides, setOverrides] = useState<Partial<NotificationSettings>>({});
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/profile")
-      .then((r) => r.json())
-      .then((profile) => {
-        if (profile) {
-          setForm({
-            emailNotifications: profile.notif_email ?? true,
-            lowStockAlerts: profile.notif_low_stock ?? true,
-            expenseNotifications: profile.notif_expenses ?? false,
-            weeklyReports: profile.notif_weekly_reports ?? true,
-            marketingEmails: profile.notif_marketing ?? true,
-          });
-        }
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const base = profile ? mapProfileToForm(profile) : DEFAULTS;
+  const form: NotificationSettings = { ...base, ...overrides };
 
-  const toggle = (key: keyof NotificationSettings) =>
-    setForm((p) => ({ ...p, [key]: !p[key] }));
+  const toggle = (key: keyof NotificationSettings) => {
+    setSaved(false);
+    setOverrides((p) => ({ ...p, [key]: !form[key] }));
+  };
 
   const handleSave = async () => {
     setSaving(true);
-    await fetch("/api/profile", {
+    setError(null);
+
+    const res = await fetch("/api/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -84,10 +97,26 @@ export default function NotificationsSection() {
         notif_marketing: form.marketingEmails,
       }),
     });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Failed to save preferences");
+      setSaving(false);
+      return;
+    }
+
+    setOverrides({});
+    setSaved(true);
     setSaving(false);
   };
 
-  if (loading)
+  const handleReset = () => {
+    setOverrides(DEFAULTS);
+    setSaved(false);
+    setError(null);
+  };
+
+  if (loading) {
     return (
       <div className="space-y-3 animate-pulse">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -101,6 +130,7 @@ export default function NotificationsSection() {
         ))}
       </div>
     );
+  }
 
   return (
     <SettingsSection
@@ -131,6 +161,18 @@ export default function NotificationsSection() {
         ))}
       </div>
 
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2.5">
+          {error}
+        </div>
+      )}
+
+      {saved && (
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 text-green-600 dark:text-green-400 text-xs rounded-lg px-3 py-2.5">
+          ✓ Notification preferences saved
+        </div>
+      )}
+
       <div className="border border-amber-200 dark:border-amber-900/50 rounded-lg p-3 bg-amber-50 dark:bg-amber-950/30">
         <p className="text-xs text-amber-700 dark:text-amber-400">
           💡 Quick Tip: Turn off all notifications for busy nights, or customize
@@ -147,7 +189,7 @@ export default function NotificationsSection() {
           {saving ? "Saving…" : "Save Preferences"}
         </button>
         <button
-          onClick={() => setForm(DEFAULTS)}
+          onClick={handleReset}
           className="text-sm text-[#707375] dark:text-[#A0A0A0] hover:text-[#1E1F20] dark:hover:text-white transition-colors px-2 py-2"
         >
           Reset to Default

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -9,11 +9,15 @@ export async function GET() {
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { searchParams } = new URL(request.url);
+  const limit = parseInt(searchParams.get("limit") ?? "50");
+
   const { data, error } = await supabase
     .from("sales")
     .select("*")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -38,12 +42,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: product, error: fetchError } = await supabase
-    .from("products")
-    .select("id, name, stock")
-    .eq("id", product_id)
-    .eq("user_id", user.id)
-    .single();
+  const [{ data: product, error: fetchError }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, name, stock")
+      .eq("id", product_id)
+      .eq("user_id", user.id)
+      .single(),
+  ]);
 
   if (fetchError || !product) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -73,13 +79,11 @@ export async function POST(request: Request) {
       })
       .select()
       .single(),
-
     supabase
       .from("products")
       .update({ stock: product.stock - quantity })
       .eq("id", product_id)
       .eq("user_id", user.id),
-
     supabase.from("stock_movements").insert({
       user_id: user.id,
       product_id,
@@ -96,12 +100,15 @@ export async function POST(request: Request) {
     );
   }
 
+  // Always insert in-app notification — it's separate from email
   await supabase.from("notifications").insert({
     user_id: user.id,
     type: "sale",
     title: "New Sale Recorded",
     message: `${quantity}x ${product.name} sold for ₦${total.toLocaleString()}`,
   });
+
+  // TODO: if (profile?.notif_email !== false) { /* send email here */ }
 
   return NextResponse.json(sale, { status: 201 });
 }

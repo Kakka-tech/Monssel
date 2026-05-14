@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User } from "lucide-react";
 import { BusinessInfo } from "../types";
 import SettingsSection from "./SettingsSection";
@@ -19,14 +19,62 @@ const DEFAULTS: BusinessInfo = {
 export default function BusinessInfoSection() {
   const [form, setForm] = useState<BusinessInfo>(DEFAULTS);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
-  const set = (key: keyof BusinessInfo) => (value: string) =>
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((profile) => {
+        if (!profile) return;
+        setForm({
+          businessName: profile.business_name ?? "",
+          businessEmail: profile.business_email ?? "",
+          phoneNumber: profile.phone_number ?? "",
+          taxId: profile.tax_id ?? "",
+          businessAddress: profile.business_address ?? "",
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  const set = (key: keyof BusinessInfo) => (value: string) => {
+    setError(null);
+    setSaved(false);
     setForm((p) => ({ ...p, [key]: value }));
+  };
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
+    setError(null);
+
+    const res = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        business_name: form.businessName,
+        business_email: form.businessEmail,
+        phone_number: form.phoneNumber,
+        tax_id: form.taxId,
+        business_address: form.businessAddress,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Failed to save business info");
+      setSaving(false);
+      return;
+    }
+
+    setSaved(true);
     setSaving(false);
+  };
+
+  const handleCancel = () => {
+    setForm(DEFAULTS);
+    setError(null);
+    setSaved(false);
   };
 
   return (
@@ -49,10 +97,7 @@ export default function BusinessInfoSection() {
           onChange={set("businessEmail")}
           type="email"
         />
-        <PhoneInput
-          value={form.phoneNumber}
-          onChange={set("phoneNumber")}
-        />
+        <PhoneInput value={form.phoneNumber} onChange={set("phoneNumber")} />
         <SettingsInput
           label="Tax ID / Registration Number"
           placeholder="Enter tax id"
@@ -60,17 +105,27 @@ export default function BusinessInfoSection() {
           onChange={set("taxId")}
         />
       </div>
+
       <SettingsInput
         label="Business Address"
         placeholder="Enter your business address"
         value={form.businessAddress}
         onChange={set("businessAddress")}
       />
-      <SaveBar
-        onSave={handleSave}
-        onCancel={() => setForm(DEFAULTS)}
-        saving={saving}
-      />
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2.5">
+          {error}
+        </div>
+      )}
+
+      {saved && (
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 text-green-600 dark:text-green-400 text-xs rounded-lg px-3 py-2.5">
+          ✓ Business information saved successfully
+        </div>
+      )}
+
+      <SaveBar onSave={handleSave} onCancel={handleCancel} saving={saving} />
     </SettingsSection>
   );
 }
