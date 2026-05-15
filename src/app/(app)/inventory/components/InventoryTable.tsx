@@ -8,12 +8,14 @@ interface InventoryTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
   onAddStock: (product: Product) => void;
+  onDelete: (id: string) => void;
 }
 
 export default function InventoryTable({
   products,
   onEdit,
   onAddStock,
+  onDelete,
 }: InventoryTableProps) {
   const [search, setSearch] = useState("");
 
@@ -43,21 +45,11 @@ export default function InventoryTable({
           <table className="w-full min-w-150">
             <thead>
               <tr className="bg-gray-50 dark:bg-[#1E1F20] border-b border-[#ECEDEE] dark:border-[#2E2E2E]">
-                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">
-                  Product
-                </th>
-                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">
-                  Status
-                </th>
-                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">
-                  Stock
-                </th>
-                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">
-                  Price
-                </th>
-                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">
-                  Actions
-                </th>
+                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">Product</th>
+                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">Status</th>
+                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">Stock</th>
+                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">Price</th>
+                <th className="text-left text-xs font-medium text-[#707375] dark:text-[#A0A0A0] px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#ECEDEE] dark:divide-[#2E2E2E]">
@@ -67,6 +59,7 @@ export default function InventoryTable({
                   product={product}
                   onEdit={onEdit}
                   onAddStock={onAddStock}
+                  onDelete={onDelete}
                 />
               ))}
             </tbody>
@@ -80,6 +73,7 @@ export default function InventoryTable({
               product={product}
               onEdit={onEdit}
               onAddStock={onAddStock}
+              onDelete={onDelete}
             />
           ))}
         </div>

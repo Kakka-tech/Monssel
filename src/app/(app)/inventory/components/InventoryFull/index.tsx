@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "../../types";
 import InventoryTable from "../InventoryTable";
 import AddProductForm from "../AddProductForm";
@@ -14,11 +14,27 @@ export default function InventoryFull({
   products,
   onRefresh,
 }: InventoryFullProps) {
+  const [localProducts, setLocalProducts] = useState<Product[]>(products);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addingStock, setAddingStock] = useState<Product | null>(null);
   const [stockAmount, setStockAmount] = useState("");
   const [stockLoading, setStockLoading] = useState(false);
   const [stockError, setStockError] = useState<string | null>(null);
+
+  // Sync when parent refetches
+  useEffect(() => {
+    setLocalProducts(products);
+  }, [products]);
+
+  const handleEdit = (updated: Product) => {
+    setLocalProducts((prev) =>
+      prev.map((p) => (p.id === updated.id ? updated : p)),
+    );
+  };
+
+  const handleDelete = (id: string) => {
+    setLocalProducts((prev) => prev.filter((p) => p.id !== id));
+  };
 
   const handleAddStock = async () => {
     if (!addingStock || !stockAmount) return;
@@ -72,13 +88,14 @@ export default function InventoryFull({
       </div>
 
       <InventoryTable
-        products={products}
-        onEdit={(product) => console.log("Edit:", product)}
+        products={localProducts}
+        onEdit={handleEdit}
         onAddStock={(product) => {
           setAddingStock(product);
           setStockAmount("");
           setStockError(null);
         }}
+        onDelete={handleDelete}
       />
 
       {addingStock && (
