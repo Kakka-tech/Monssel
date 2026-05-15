@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -122,6 +120,66 @@ export type Database = {
           },
         ]
       }
+      payment_links: {
+        Row: {
+          buyer_email: string | null
+          created_at: string
+          id: string
+          paid_at: string | null
+          price: number
+          product_id: string
+          product_name: string
+          provider: string
+          quantity: number
+          reference: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          buyer_email?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          price: number
+          product_id: string
+          product_name: string
+          provider: string
+          quantity?: number
+          reference?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          buyer_email?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          price?: number
+          product_id?: string
+          product_name?: string
+          provider?: string
+          quantity?: number
+          reference?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_links_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           created_at: string
@@ -167,8 +225,10 @@ export type Database = {
         Row: {
           avatar_url: string | null
           business_address: string | null
+          business_description: string | null
           business_email: string | null
           business_name: string | null
+          business_type: string | null
           created_at: string
           currency: string
           dashboard_layout: string
@@ -195,8 +255,10 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           business_address?: string | null
+          business_description?: string | null
           business_email?: string | null
           business_name?: string | null
+          business_type?: string | null
           created_at?: string
           currency?: string
           dashboard_layout?: string
@@ -223,8 +285,10 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           business_address?: string | null
+          business_description?: string | null
           business_email?: string | null
           business_name?: string | null
+          business_type?: string | null
           created_at?: string
           currency?: string
           dashboard_layout?: string
@@ -351,7 +415,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decrement_stock: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
@@ -478,6 +545,7 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
 
 export const Constants = {
   public: {
