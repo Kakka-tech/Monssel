@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { RegionalSettings } from "../types";
-import { Globe } from "lucide-react";
+import { Globe, Loader2 } from "lucide-react";
 import { useCurrency } from "@/lib/currency-context";
 import SettingsSection from "./SettingsSection";
 import SettingsSelect from "./SettingsSelect";
@@ -41,7 +41,7 @@ const NUMBER_FORMATS = [
 ];
 
 export default function RegionalSection() {
-  const { setCurrency } = useCurrency();
+  const { setCurrency, ratesLoading } = useCurrency();
   const [form, setForm] = useState<RegionalSettings>(DEFAULTS);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -138,6 +138,13 @@ export default function RegionalSection() {
         />
       </div>
 
+      {ratesLoading && (
+        <div className="flex items-center gap-2 text-xs text-[#707375] dark:text-[#A0A0A0]">
+          <Loader2 className="w-3 h-3 animate-spin" />
+          Fetching latest exchange rates…
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2.5">
           {error}
@@ -152,8 +159,8 @@ export default function RegionalSection() {
 
       <div className="border border-blue-100 dark:border-blue-900/50 rounded-lg p-3 bg-blue-50 dark:bg-blue-950/30">
         <p className="text-xs text-blue-600 dark:text-blue-400">
-          💡 These settings will apply to all transactions, reports, and
-          invoices across your account.
+          💡 Prices are stored in NGN and converted in real-time using live
+          exchange rates. Rates are cached for 1 hour.
         </p>
       </div>
 
