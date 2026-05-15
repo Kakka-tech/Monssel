@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -31,7 +31,6 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // /auth/verify is excluded — user may have a partial session mid-OTP flow
   const isAuthRoute =
     pathname.startsWith("/auth") && !pathname.startsWith("/auth/verify");
 
@@ -44,12 +43,30 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/analytics") ||
     pathname.startsWith("/settings");
 
-  if (!user && isAppRoute) {
+  const isWelcomeRoute = pathname.startsWith("/welcome");
+
+  // Unauthenticated users can't access app or welcome routes
+  if (!user && (isAppRoute || isWelcomeRoute)) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
   }
 
+  // Authenticated users who have completed onboarding can't go back to welcome
+  if (user && isWelcomeRoute) {
+    const { count } = await supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    if (count && count > 0) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Authenticated users don't need to see auth pages
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";

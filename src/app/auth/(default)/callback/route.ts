@@ -30,6 +30,21 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // Check if this is a new user (no products yet)
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { count } = await supabase
+          .from("products")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        // New user → send to welcome flow
+        if (count === 0) {
+          return NextResponse.redirect(`${origin}/welcome`);
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

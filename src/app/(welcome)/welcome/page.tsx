@@ -9,29 +9,55 @@ import WelcomeStepThree from "../components/WelcomeStepThree";
 export default function WelcomePage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [stockPreference, setStockPreference] = useState<"yes" | "no" | null>(null);
-  const [paymentPreference, setPaymentPreference] = useState<"yes" | "skip" | null>(null);
+  const [stockPreference, setStockPreference] = useState<"yes" | "no" | null>(
+    null,
+  );
+  const [paymentPreference, setPaymentPreference] = useState<
+    "yes" | "skip" | null
+  >(null);
+  const [saving, setSaving] = useState(false);
 
-  const handleComplete = () => {
-    console.log("Stock:", stockPreference);
-    console.log("Payment:", paymentPreference);
-    router.push("/add-product");
+  const handleStepTwoNext = async () => {
+    if (!stockPreference) return;
+
+    // Save business type to profile
+    await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        business_type: stockPreference === "yes" ? "product" : "service",
+      }),
+    });
+
+    setStep(3);
+  };
+
+  const handleComplete = async () => {
+    setSaving(true);
+
+    // If they want to connect payment, send to settings, else add-product or dashboard
+    if (paymentPreference === "yes") {
+      router.push("/settings?section=payment");
+    } else {
+      // Product-based → add first product; service-based → go straight to dashboard
+      if (stockPreference === "yes") {
+        router.push("/add-product");
+      } else {
+        router.push("/dashboard");
+      }
+    }
   };
 
   return (
     <>
-      {step === 1 && (
-        <WelcomeStepOne
-          onNext={() => setStep(2)}
-        />
-      )}
+      {step === 1 && <WelcomeStepOne onNext={() => setStep(2)} />}
 
       {step === 2 && (
         <WelcomeStepTwo
           selected={stockPreference}
           setSelected={setStockPreference}
           onBack={() => setStep(1)}
-          onNext={() => setStep(3)}
+          onNext={handleStepTwoNext}
         />
       )}
 
@@ -41,6 +67,7 @@ export default function WelcomePage() {
           setSelected={setPaymentPreference}
           onBack={() => setStep(2)}
           onComplete={handleComplete}
+          saving={saving}
         />
       )}
     </>
