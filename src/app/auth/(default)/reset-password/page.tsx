@@ -1,27 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+export default function ResetPasswordPage() {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [ready, setReady] = useState(false);
+  const router = useRouter();
   const supabase = createClient();
 
-  const handleSubmit = async () => {
-    if (!email) return;
+  useEffect(() => {
+    // Check if there's already an active session (user came from email link)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        setReady(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+  const handleReset = async () => {
+    if (!password || !confirm) return;
+    if (password !== confirm) {
+      setError("Passwords do not match");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
+    const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
       setError(error.message);
@@ -29,8 +52,7 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    setSent(true);
-    setLoading(false);
+    router.push("/dashboard");
   };
 
   return (
@@ -54,47 +76,45 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="w-full max-w-sm"
         >
-          {sent ?
-            <div className="text-center space-y-4">
-              <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto">
-                <span className="text-2xl">📬</span>
-              </div>
-              <h1 className="text-2xl font-semibold text-neutral-900 tracking-tight">
-                Check your email
-              </h1>
-              <p className="text-sm text-neutral-500 leading-relaxed">
-                We sent a password reset link to{" "}
-                <span className="font-medium text-neutral-800">{email}</span>.
-                Check your inbox and follow the link to reset your password.
-              </p>
-              <Link
-                href="/auth/login"
-                className="inline-block text-sm font-medium text-neutral-900 hover:underline mt-2"
-              >
-                Back to login
-              </Link>
+          {!ready ?
+            <div className="text-center space-y-3">
+              <div className="w-5 h-5 rounded-full border-2 border-neutral-200 border-t-neutral-900 animate-spin mx-auto" />
+              <p className="text-sm text-neutral-500">Verifying your link…</p>
             </div>
           : <>
               <div className="mb-8 space-y-1.5">
                 <h1 className="text-2xl font-semibold text-neutral-900 tracking-tight">
-                  Forgot password?
+                  Set new password
                 </h1>
                 <p className="text-sm text-neutral-500 leading-relaxed">
-                  Enter your email and we&apos;ll send you a reset link.
+                  Choose a strong password for your account.
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-neutral-700">
-                    Email address
+                    New password
                   </label>
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                    placeholder="you@example.com"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Min. 8 characters"
+                    className="w-full border border-[#ECEDEE] rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-black placeholder:text-neutral-400 text-neutral-900"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-neutral-700">
+                    Confirm password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleReset()}
+                    placeholder="Repeat your password"
                     className="w-full border border-[#ECEDEE] rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-black placeholder:text-neutral-400 text-neutral-900"
                   />
                 </div>
@@ -106,27 +126,17 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <button
-                  onClick={handleSubmit}
-                  disabled={!email || loading}
+                  onClick={handleReset}
+                  disabled={!password || !confirm || loading}
                   className="w-full bg-neutral-900 text-white py-2.5 rounded-lg hover:bg-black transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ?
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin inline-block" />
-                      Sending…
+                      Updating…
                     </span>
-                  : "Send Reset Link"}
+                  : "Reset Password"}
                 </button>
-
-                <p className="text-center text-sm text-neutral-500">
-                  Remember your password?{" "}
-                  <Link
-                    href="/auth/login"
-                    className="font-medium text-neutral-900 hover:underline"
-                  >
-                    Sign in
-                  </Link>
-                </p>
               </div>
             </>
           }
