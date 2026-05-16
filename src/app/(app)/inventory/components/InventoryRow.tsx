@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Link } from "lucide-react";
 import { Product, getStockStatus } from "../types";
 import StatusBadge from "../components/StatusBadge";
 import { useCurrency } from "@/lib/currency-context";
 import EditProductModal from "./EditProductModal";
 import DeleteProductModal from "./DeleteProductModal";
+import PaymentLinkModal from "./PaymentLinkModal";
 
 interface InventoryRowProps {
   product: Product;
@@ -31,6 +32,7 @@ export default function InventoryRow({
 
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
+  const [linkProduct, setLinkProduct] = useState<Product | null>(null);
 
   return (
     <>
@@ -75,6 +77,13 @@ export default function InventoryRow({
               <Trash2 className="w-4 h-4" />
             </button>
             <button
+              onClick={() => setLinkProduct(product)}
+              className="p-1.5 text-gray-400 dark:text-[#A0A0A0] hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-[#2E2E2E]"
+              aria-label="Generate payment link"
+            >
+              <Link className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => onAddStock(product)}
               className="flex items-center gap-1.5 bg-[#1E1F20] dark:bg-white text-white dark:text-[#121212] text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
             >
@@ -85,28 +94,34 @@ export default function InventoryRow({
         </td>
       </tr>
 
-      {typeof window !== "undefined" && createPortal(
-        <>
-          <EditProductModal
-            key={editProduct?.id}
-            product={editProduct}
-            onClose={() => setEditProduct(null)}
-            onSave={(updated) => {
-              onEdit(updated);
-              setEditProduct(null);
-            }}
-          />
-          <DeleteProductModal
-            product={deleteProduct}
-            onClose={() => setDeleteProduct(null)}
-            onDelete={(id) => {
-              onDelete(id);
-              setDeleteProduct(null);
-            }}
-          />
-        </>,
-        document.body
-      )}
+      {typeof window !== "undefined" &&
+        createPortal(
+          <>
+            <EditProductModal
+              key={editProduct?.id}
+              product={editProduct}
+              onClose={() => setEditProduct(null)}
+              onSave={(updated) => {
+                onEdit(updated);
+                setEditProduct(null);
+              }}
+            />
+            <DeleteProductModal
+              product={deleteProduct}
+              onClose={() => setDeleteProduct(null)}
+              onDelete={(id) => {
+                onDelete(id);
+                setDeleteProduct(null);
+              }}
+            />
+            <PaymentLinkModal
+              key={linkProduct?.id}
+              product={linkProduct}
+              onClose={() => setLinkProduct(null)}
+            />
+          </>,
+          document.body,
+        )}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
@@ -7,7 +7,6 @@ export async function POST(request: Request) {
   const signature = request.headers.get("x-paystack-signature") ?? "";
   const secret = process.env.PAYSTACK_SECRET_KEY ?? "";
 
-  // Verify webhook signature
   const hash = crypto
     .createHmac("sha512", secret)
     .update(rawBody)
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
   }
 
   const reference = event.data.reference;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: link, error } = await supabase
     .from("payment_links")
@@ -37,7 +36,6 @@ export async function POST(request: Request) {
 
   const total = link.price * link.quantity;
 
-  // Record sale, update stock, mark link paid — all in parallel
   await Promise.all([
     supabase.from("sales").insert({
       user_id: link.user_id,

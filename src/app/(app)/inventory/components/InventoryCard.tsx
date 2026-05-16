@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Link } from "lucide-react";
 import { Product, getStockStatus } from "../types";
 import StatusBadge from "../components/StatusBadge";
 import { useCurrency } from "@/lib/currency-context";
 import EditProductModal from "./EditProductModal";
 import DeleteProductModal from "./DeleteProductModal";
+import PaymentLinkModal from "./PaymentLinkModal";
 
 interface InventoryCardProps {
   product: Product;
@@ -30,6 +31,7 @@ export default function InventoryCard({
 
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
+  const [linkProduct, setLinkProduct] = useState<Product | null>(null);
 
   return (
     <>
@@ -74,6 +76,13 @@ export default function InventoryCard({
               <Trash2 className="w-4 h-4" />
             </button>
             <button
+              onClick={() => setLinkProduct(product)}
+              className="p-2 text-gray-400 dark:text-[#A0A0A0] hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-md border border-[#ECEDEE] dark:border-[#2E2E2E] bg-white dark:bg-[#1E1F20]"
+              aria-label="Generate payment link"
+            >
+              <Link className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => onAddStock(product)}
               className="flex items-center gap-1.5 bg-[#1E1F20] dark:bg-white text-white dark:text-[#121212] text-xs font-medium px-4 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
             >
@@ -93,7 +102,6 @@ export default function InventoryCard({
           setEditProduct(null);
         }}
       />
-
       <DeleteProductModal
         product={deleteProduct}
         onClose={() => setDeleteProduct(null)}
@@ -101,6 +109,11 @@ export default function InventoryCard({
           onDelete(id);
           setDeleteProduct(null);
         }}
+      />
+      <PaymentLinkModal
+        key={linkProduct?.id}
+        product={linkProduct}
+        onClose={() => setLinkProduct(null)}
       />
     </>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface PaymentLink {
   id: string;
@@ -22,16 +23,14 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-200 p-8 text-center space-y-3">
-          <div className="text-4xl">
-            {link.status === "paid" ? "✅" : "⏰"}
-          </div>
+          <div className="text-4xl">{link.status === "paid" ? "✅" : "⏰"}</div>
           <h2 className="text-lg font-semibold text-gray-900">
             {link.status === "paid" ? "Already Paid" : "Link Expired"}
           </h2>
           <p className="text-sm text-gray-500">
-            {link.status === "paid"
-              ? "This payment link has already been used."
-              : "This payment link is no longer active."}
+            {link.status === "paid" ?
+              "This payment link has already been used."
+            : "This payment link is no longer active."}
           </p>
         </div>
       </div>
@@ -57,7 +56,6 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
       return;
     }
 
-    // Redirect to payment gateway
     window.location.href = data.url;
   };
 
@@ -67,17 +65,30 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
         {/* Header */}
         <div className="text-center">
           <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mx-auto mb-3">
-            <span className="text-2xl">📦</span>
+            <Image
+              src="/Icons/logo.png"
+              alt="Monssel"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
           </div>
           <h1 className="text-lg font-semibold text-gray-900">Monssel Pay</h1>
-          <p className="text-sm text-gray-500">Secure payment powered by {link.provider === "paystack" ? "Paystack" : "Flutterwave"}</p>
+          <p className="text-sm text-gray-500">
+            Secure payment powered by{" "}
+            {link.provider === "paystack" ? "Paystack" : "Flutterwave"}
+          </p>
         </div>
 
         {/* Product card */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">You&apos;re paying for</p>
-            <p className="text-lg font-semibold text-gray-900 mt-0.5">{link.product_name}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">
+              You&apos;re paying for
+            </p>
+            <p className="text-lg font-semibold text-gray-900 mt-0.5">
+              {link.product_name}
+            </p>
             <p className="text-sm text-gray-500">Qty: {link.quantity}</p>
           </div>
 
@@ -89,7 +100,9 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-700">Your email</label>
+            <label className="text-xs font-medium text-gray-700">
+              Your email
+            </label>
             <input
               type="email"
               value={email}
@@ -99,9 +112,7 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
             />
           </div>
 
-          {error && (
-            <p className="text-xs text-red-500">{error}</p>
-          )}
+          {error && <p className="text-xs text-red-500">{error}</p>}
 
           <button
             onClick={handlePay}

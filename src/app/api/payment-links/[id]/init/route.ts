@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY ?? "";
@@ -12,10 +12,10 @@ export async function POST(
   const { id } = await params;
   const { email } = await request.json();
 
-  if (!email) return NextResponse.json({ error: "Email is required" }, { status: 400 });
+  if (!email)
+    return NextResponse.json({ error: "Email is required" }, { status: 400 });
 
-  // Use service role to read payment link without auth (buyer is not logged in)
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: link, error } = await supabase
     .from("payment_links")
@@ -25,11 +25,14 @@ export async function POST(
     .single();
 
   if (error || !link) {
-    return NextResponse.json({ error: "Payment link not found or already used" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Payment link not found or already used" },
+      { status: 404 },
+    );
   }
 
-  const amountKobo = Math.round(link.price * link.quantity * 100); // kobo for Paystack
-  const amountMain = link.price * link.quantity; // main unit for Flutterwave
+  const amountKobo = Math.round(link.price * link.quantity * 100);
+  const amountMain = link.price * link.quantity;
 
   if (link.provider === "paystack") {
     const res = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -53,7 +56,6 @@ export async function POST(
       return NextResponse.json({ error: data.message }, { status: 502 });
     }
 
-    // Save reference and buyer email
     await supabase
       .from("payment_links")
       .update({ reference: data.data.reference, buyer_email: email })
