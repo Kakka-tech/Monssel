@@ -10,10 +10,10 @@ export default function Header() {
         <div className="flex items-center">
           <Link href="/">
             <Image
-              src="/icons/logo.png"
+              src="/Icons/logo-dark.png"
               alt="Monssel"
-              width={52}
-              height={52}
+              width={40}
+              height={40}
               className=""
               priority
             />
