@@ -60,7 +60,7 @@ export default function ResetPasswordPage() {
       <header className="p-5 sm:p-6">
         <div className="w-9 h-9 flex items-center justify-center">
           <Image
-            src="/icons/logo-dark.png"
+            src="/icons/logo.png"
             alt="Logo"
             width={50}
             height={50}
