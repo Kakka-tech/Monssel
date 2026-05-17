@@ -31,10 +31,26 @@ export async function POST(
     );
   }
 
+  // Fetch seller's subaccount code
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("paystack_subaccount_code")
+    .eq("id", link.user_id)
+    .single();
+
+  const subaccount = profile?.paystack_subaccount_code;
+
   const amountKobo = Math.round(link.price * link.quantity * 100);
   const amountMain = link.price * link.quantity;
 
   if (link.provider === "paystack") {
+    if (!subaccount) {
+      return NextResponse.json(
+        { error: "Seller has not connected their Paystack account yet" },
+        { status: 400 },
+      );
+    }
+
     const res = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
@@ -47,6 +63,7 @@ export async function POST(
         currency: "NGN",
         reference: `monssel_${id}_${Date.now()}`,
         callback_url: `${APP_URL}/pay/${id}/success`,
+        subaccount, // money goes to seller's account
         metadata: { payment_link_id: id },
       }),
     });
