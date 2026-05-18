@@ -127,7 +127,7 @@ export default function Footer() {
 
                 <div className="flex items-center gap-2">
                   <Image
-                    src="/icons/kakka.png"
+                    src="/Icons/kakka.png"
                     alt="Kakka icon"
                     width={14}
                     height={14}

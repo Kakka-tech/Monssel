@@ -1,0 +1,45 @@
+.header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #999;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  padding: 5px 14px;
+  margin-bottom: 20px;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #111;
+  display: inline-block;
+}
+
+.title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  color: #111;
+  margin: 0 0 14px;
+  line-height: 1.15;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #888;
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.75;
+}

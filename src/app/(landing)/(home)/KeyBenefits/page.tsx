@@ -1,5 +1,5 @@
-import styles from "./KeyBenefits.module.css";
-import SectionHeader from "./components/SectionHeader";
+import styles from "@/components/ui/KeyBenefits.module.css";
+import SectionHeader from "../../../../components/ui/SectionHeader";
 import BenefitCard, { type Benefit } from "./components/BenefitCard";
 
 const BENEFITS: Benefit[] = [

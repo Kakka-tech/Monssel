@@ -1,4 +1,4 @@
-import styles from "../KeyBenefits.module.css";
+import styles from "./SectionHeader.module.css";
 
 interface SectionHeaderProps {
   eyebrow: string;

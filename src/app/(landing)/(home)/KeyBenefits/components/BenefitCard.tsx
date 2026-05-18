@@ -1,4 +1,4 @@
-import styles from "../KeyBenefits.module.css";
+import styles from "@/components/ui/KeyBenefits.module.css";
 import BenefitIcon from "./BenefitIcon";
 
 export interface Benefit {
