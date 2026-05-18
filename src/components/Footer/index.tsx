@@ -42,7 +42,7 @@ export default function Footer() {
             <div>
               <div className="mb-4 flex items-center space-x-2 text-lg font-semibold">
                 <Image
-                  src="/icons/logo.png" 
+                  src="/Icons/logo-dark.png" 
                   alt="Monssel Logo"
                   width={24}
                   height={24} 
