@@ -17,14 +17,14 @@ export default function Footer() {
 
         <div className="mb-4 flex flex-wrap justify-center gap-4">
           <Link
-            href="#"
+            href="/auth/signup"
             className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-medium text-black"
           >
             Get Started for Free →
           </Link>
 
           <Link
-            href="#"
+            href="auth/login"
             className="inline-flex items-center justify-center rounded-lg border-2 border-white px-6 py-3 text-sm font-medium"
           >
             View Demo

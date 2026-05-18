@@ -12,7 +12,7 @@ export default function HeroSection() {
             Track sales, stock, and profit without accounting stress.
           </h1>
 
-          <p className="mt-4 text-sm text-[#666] md:text-base">
+          <p className="mt-4 text-sm text-[#666] md:text-base leading-relaxed">
             A simple daily business tool built for small business owners, not
             accountants.
           </p>
@@ -21,9 +21,8 @@ export default function HeroSection() {
             <Link href="/auth/signup">
               <Button>Get Started</Button>
             </Link>
-
             <Link
-              href="/auth//login"
+              href="/auth/login"
               className="text-sm text-gray-600 hover:text-black"
             >
               Log In

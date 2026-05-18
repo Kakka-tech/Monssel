@@ -15,7 +15,7 @@ export default function NotesStats({ notes }: NotesStatsProps) {
     notes.filter((n) => n.category === cat).length;
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <div className="border border-[#ECEDEE] dark:border-[#2E2E2E] rounded-xl px-4 py-3.5 bg-white dark:bg-[#1E1F20] space-y-2">
         <p className="text-xs text-[#707375] dark:text-[#A0A0A0]">
           Total Notes
@@ -24,6 +24,7 @@ export default function NotesStats({ notes }: NotesStatsProps) {
           {notes.length}
         </p>
       </div>
+
       {NOTE_CATEGORIES.map((cat) => (
         <div
           key={cat}

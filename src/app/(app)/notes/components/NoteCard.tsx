@@ -1,4 +1,4 @@
-import { Clock, User, Package, Lightbulb } from "lucide-react";
+import { Clock, User, Package, Lightbulb, Trash2 } from "lucide-react";
 import { Note, CATEGORY_STYLES, NoteCategory } from "../types";
 
 interface NoteCardProps {
@@ -28,47 +28,35 @@ export default function NoteCard({ note, onDelete }: NoteCardProps) {
   return (
     <div className="flex items-start gap-3 py-4 last:border-0">
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${styles.avatar}`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${styles.avatar}`}
       >
         {AVATAR_ICON[note.category]}
       </div>
-      <div className="flex-1 min-w-0 space-y-1.5">
-        <p className="text-sm text-[#1E1F20] dark:text-white leading-snug">
+
+      <div className="flex-1 min-w-0 space-y-2">
+        <p className="text-sm text-[#1E1F20] dark:text-white leading-snug wrap-break-word">
           {note.content}
         </p>
+
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="flex items-center gap-1 text-xs text-[#707375] dark:text-[#A0A0A0]">
-            <Clock className="w-3 h-3" />
+          <span className="flex items-center gap-1 text-xs text-[#707375] dark:text-[#A0A0A0] whitespace-nowrap">
+            <Clock className="w-3 h-3 shrink-0" />
             {timeAgo(note.created_at)}
           </span>
           <span
-            className={`text-xs font-medium px-2 py-0.5 rounded-full ${styles.badge}`}
+            className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${styles.badge}`}
           >
             {note.category}
           </span>
         </div>
       </div>
+
       <button
         onClick={() => onDelete(note.id)}
-        className="text-[#707375] dark:text-[#A0A0A0] hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0 mt-0.5"
+        className="shrink-0 p-1.5 -mr-1 rounded-md text-[#707375] dark:text-[#A0A0A0] hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors mt-0.5"
         aria-label="Delete note"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6l-1 14H6L5 6" />
-          <path d="M10 11v6" />
-          <path d="M14 11v6" />
-          <path d="M9 6V4h6v2" />
-        </svg>
+        <Trash2 className="w-4 h-4" />
       </button>
     </div>
   );

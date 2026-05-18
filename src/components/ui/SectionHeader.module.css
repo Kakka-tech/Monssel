@@ -1,6 +1,7 @@
 .header {
   text-align: center;
   margin-bottom: 56px;
+  font-family: var(--font-inter), sans-serif;
 }
 
 .eyebrow {
@@ -16,6 +17,7 @@
   border-radius: 999px;
   padding: 5px 14px;
   margin-bottom: 20px;
+  font-family: var(--font-inter), sans-serif;
 }
 
 .eyebrow::before {
@@ -34,6 +36,7 @@
   color: #111;
   margin: 0 0 14px;
   line-height: 1.15;
+  font-family: var(--font-inter), sans-serif;
 }
 
 .subtitle {
