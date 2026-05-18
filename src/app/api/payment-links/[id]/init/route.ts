@@ -92,7 +92,7 @@ export async function POST(
         tx_ref: `monssel_${id}_${Date.now()}`,
         amount: amountMain,
         currency: "NGN",
-        redirect_url: `${APP_URL}/pay/${id}/success`,
+        redirect_url: `${APP_URL}/api/verify-payment?link_id=${id}`,
         customer: { email },
         meta: { payment_link_id: id },
         customizations: {
