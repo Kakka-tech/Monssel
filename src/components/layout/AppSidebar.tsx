@@ -19,10 +19,20 @@ import {
 import LogoutModal from "./LogoutModal";
 
 const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Record Sales", href: "/record-sales", icon: ShoppingCart },
-  { name: "Inventory", href: "/inventory", icon: Package },
-  { name: "Expenses", href: "/expenses", icon: Receipt },
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    tour: "dashboard",
+  },
+  {
+    name: "Record Sales",
+    href: "/record-sales",
+    icon: ShoppingCart,
+    tour: "record-sales",
+  },
+  { name: "Inventory", href: "/inventory", icon: Package, tour: "inventory" },
+  { name: "Expenses", href: "/expenses", icon: Receipt, tour: "expenses" },
   { name: "Notes", href: "/notes", icon: StickyNote },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
 ];
@@ -124,6 +134,7 @@ function SidebarContent({
                 href={item.href}
                 onClick={onClose}
                 className={getLinkClassName(item.href)}
+                {...(item.tour ? { "data-tour": item.tour } : {})}
               >
                 <Icon size={18} />
                 {item.name}
@@ -143,6 +154,7 @@ function SidebarContent({
           href="/settings"
           onClick={onClose}
           className={getLinkClassName("/settings")}
+          data-tour="settings"
         >
           <Settings size={18} />
           Settings
