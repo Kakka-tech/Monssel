@@ -254,6 +254,9 @@ export type Database = {
           paystack_subaccount_code: string | null;
           paystack_bank_code: string | null;
           paystack_account_number: string | null;
+          flutterwave_subaccount_code: string | null;
+          flutterwave_bank_code: string | null;
+          flutterwave_account_number: string | null;
         };
         Insert: {
           avatar_url?: string | null;
@@ -287,6 +290,9 @@ export type Database = {
           paystack_subaccount_code: string | null;
           paystack_bank_code: string | null;
           paystack_account_number: string | null;
+          flutterwave_subaccount_code: string | null;
+          flutterwave_bank_code: string | null;
+          flutterwave_account_number: string | null;
         };
         Update: {
           avatar_url?: string | null;
@@ -320,6 +326,9 @@ export type Database = {
           paystack_subaccount_code: string | null;
           paystack_bank_code: string | null;
           paystack_account_number: string | null;
+          flutterwave_subaccount_code: string | null;
+          flutterwave_bank_code: string | null;
+          flutterwave_account_number: string | null;
         };
         Relationships: [];
       };
