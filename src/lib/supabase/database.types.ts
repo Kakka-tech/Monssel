@@ -287,12 +287,13 @@ export type Database = {
           theme?: string;
           timezone?: string;
           updated_at?: string;
-          paystack_subaccount_code: string | null;
-          paystack_bank_code: string | null;
-          paystack_account_number: string | null;
-          flutterwave_subaccount_code: string | null;
-          flutterwave_bank_code: string | null;
-          flutterwave_account_number: string | null;
+
+          paystack_subaccount_code?: string | null;
+          paystack_bank_code?: string | null;
+          paystack_account_number?: string | null;
+          flutterwave_subaccount_code?: string | null;
+          flutterwave_bank_code?: string | null;
+          flutterwave_account_number?: string | null;
         };
         Update: {
           avatar_url?: string | null;
