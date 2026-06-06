@@ -150,8 +150,12 @@ export default function LoginPage() {
       </div>
 
       <div className="flex justify-between items-center text-xs text-neutral-500">
-        <Link href="/auth/forgot-password" className="hover:underline">
-          Forgot Password?
+        <span>Having trouble remembering your password?</span>
+        <Link
+          href="/auth/forgot-password"
+          className="hover:underline font-medium text-neutral-700"
+        >
+          Forgot password
         </Link>
       </div>
 
