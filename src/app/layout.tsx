@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
+import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,6 +27,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${geistMono.variable} antialiased`}>
         {children}
+        <CookieConsent />
       </body>
     </html>
   );
