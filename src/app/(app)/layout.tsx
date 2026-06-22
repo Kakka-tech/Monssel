@@ -10,7 +10,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <ThemeProvider>
       <CurrencyProvider>
         <TourProvider>
-          <div className="flex flex-col h-screen bg-white dark:bg-[#121212]">
+          <div className="flex flex-col h-screen bg-[#ffffff] dark:bg-[#121212]">
             <AppHeader />
             <div className="flex flex-1 overflow-hidden">
               <AppSidebar />
