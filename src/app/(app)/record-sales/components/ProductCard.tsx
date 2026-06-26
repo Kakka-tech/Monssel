@@ -26,7 +26,7 @@ export default function ProductCard({
       } disabled:opacity-40 disabled:cursor-not-allowed`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-900 dark:text-white">
+        <span className="text-sm font-medium text-gray-900 dark:text-[#ffffff]">
           {product.name}
         </span>
         <StockBadge stock={product.stock} />
