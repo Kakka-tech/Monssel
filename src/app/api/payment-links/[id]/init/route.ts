@@ -1,110 +1,59 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY ?? "";
+const MONSSEL_FEE_RATE = 0.015;
+const PAYSTACK_FEE_RATE = 0.015;
+const PAYSTACK_FEE_CAP = 2000;
+const TRANSFER_FEE = 10;
+
+export function calculateSellerPayout(grossAmount: number): number {
+  const paystackFee = Math.min(
+    Math.round(grossAmount * PAYSTACK_FEE_RATE * 100) / 100,
+    PAYSTACK_FEE_CAP,
+  );
+  const monsselFee = Math.round(grossAmount * MONSSEL_FEE_RATE * 100) / 100;
+  return (
+    Math.round((grossAmount - paystackFee - monsselFee - TRANSFER_FEE) * 100) /
+    100
+  );
+}
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ linkId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { linkId } = await params;
-  const { email } = await request.json();
+  const { id } = await params;
+  const supabase = await createClient();
+  const body = await request.json();
+  const { email } = body;
 
   if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    return NextResponse.json({ error: "email is required" }, { status: 400 });
   }
 
-  // ── 1. Fetch the payment link ─────────────────────────────────────────────
-  const supabase = await createClient();
-
-  const { data: link, error: linkError } = await supabase
+  const { data: link, error } = await supabase
     .from("payment_links")
-    .select("*, profiles!payment_links_user_id_fkey(paystack_subaccount_code)")
-    .eq("id", linkId)
+    .select("*")
+    .eq("id", id)
+    .eq("status", "active")
     .single();
 
-  if (linkError || !link) {
+  if (error || !link) {
     return NextResponse.json(
-      { error: "Payment link not found" },
+      { error: "Link not found or inactive" },
       { status: 404 },
     );
   }
 
-  if (link.status !== "active") {
-    return NextResponse.json(
-      {
-        error:
-          link.status === "paid" ?
-            "This link has already been paid"
-          : "This link has expired",
-      },
-      { status: 400 },
-    );
-  }
+  const grossAmount = link.price * link.quantity;
+  const amountKobo = Math.round(grossAmount * 100);
+  const reference = `monssel_${link.id}_${Date.now()}`;
 
-  const subaccount = link.profiles?.paystack_subaccount_code;
-  if (!subaccount) {
-    return NextResponse.json(
-      { error: "Seller has not connected a payment account" },
-      { status: 400 },
-    );
-  }
-
-  // ── 2. Initialise Paystack transaction ────────────────────────────────────
-  const amountKobo = Math.round(link.price * link.quantity * 100);
-  const reference = `monssel_${linkId}_${Date.now()}`;
-
-  const paystackRes = await fetch(
-    "https://api.paystack.co/transaction/initialize",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        amount: amountKobo,
-        currency: "NGN",
-        reference,
-        subaccount,
-        // Monssel takes 0% — 100% goes to seller subaccount
-        // Adjust bearer and transaction_charge if you want a platform fee
-        bearer: "subaccount",
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${linkId}/success`,
-        metadata: {
-          link_id: linkId,
-          product_id: link.product_id,
-          product_name: link.product_name,
-          quantity: link.quantity,
-          seller_id: link.user_id,
-          cancel_action: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${linkId}/declined`,
-        },
-      }),
-    },
-  );
-
-  const paystackData = await paystackRes.json();
-
-  if (!paystackData.status) {
-    console.error("[init] Paystack error:", paystackData);
-    return NextResponse.json(
-      { error: paystackData.message ?? "Failed to initialize payment" },
-      { status: 502 },
-    );
-  }
-
-  // ── 3. Save reference + buyer email to the link ───────────────────────────
-  await supabase
-    .from("payment_links")
-    .update({ reference, buyer_email: email })
-    .eq("id", linkId);
+  await supabase.from("payment_links").update({ reference }).eq("id", link.id);
 
   return NextResponse.json({
-    reference: paystackData.data.reference,
+    reference,
     amount: amountKobo,
-    subaccount,
-    // authorization_url is used if you want redirect flow instead of popup
-    authorization_url: paystackData.data.authorization_url,
+    sellerPayout: calculateSellerPayout(grossAmount),
   });
 }
