@@ -1,57 +1,62 @@
-import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY ?? "";
-const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY ?? "";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ linkId: string }> },
 ) {
-  const { id } = await params;
+  const { linkId } = await params;
   const { email } = await request.json();
 
-  if (!email)
+  if (!email) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });
+  }
 
-  const supabase = createAdminClient();
+  // ── 1. Fetch the payment link ─────────────────────────────────────────────
+  const supabase = await createClient();
 
-  const { data: link, error } = await supabase
+  const { data: link, error: linkError } = await supabase
     .from("payment_links")
-    .select("*")
-    .eq("id", id)
-    .eq("status", "active")
+    .select("*, profiles!payment_links_user_id_fkey(paystack_subaccount_code)")
+    .eq("id", linkId)
     .single();
 
-  if (error || !link) {
+  if (linkError || !link) {
     return NextResponse.json(
-      { error: "Payment link not found or already used" },
+      { error: "Payment link not found" },
       { status: 404 },
     );
   }
 
-  // Fetch seller's subaccount code
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("paystack_subaccount_code")
-    .eq("id", link.user_id)
-    .single();
+  if (link.status !== "active") {
+    return NextResponse.json(
+      {
+        error:
+          link.status === "paid" ?
+            "This link has already been paid"
+          : "This link has expired",
+      },
+      { status: 400 },
+    );
+  }
 
-  const subaccount = profile?.paystack_subaccount_code;
+  const subaccount = link.profiles?.paystack_subaccount_code;
+  if (!subaccount) {
+    return NextResponse.json(
+      { error: "Seller has not connected a payment account" },
+      { status: 400 },
+    );
+  }
 
+  // ── 2. Initialise Paystack transaction ────────────────────────────────────
   const amountKobo = Math.round(link.price * link.quantity * 100);
-  const amountMain = link.price * link.quantity;
+  const reference = `monssel_${linkId}_${Date.now()}`;
 
-  if (link.provider === "paystack") {
-    if (!subaccount) {
-      return NextResponse.json(
-        { error: "Seller has not connected their Paystack account yet" },
-        { status: 400 },
-      );
-    }
-
-    const res = await fetch("https://api.paystack.co/transaction/initialize", {
+  const paystackRes = await fetch(
+    "https://api.paystack.co/transaction/initialize",
+    {
       method: "POST",
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET}`,
@@ -61,59 +66,45 @@ export async function POST(
         email,
         amount: amountKobo,
         currency: "NGN",
-        reference: `monssel_${id}_${Date.now()}`,
-        callback_url: `${APP_URL}/pay/${id}/success`,
-        subaccount, // money goes to seller's account
-        metadata: { payment_link_id: id },
-      }),
-    });
-
-    const data = await res.json();
-    if (!data.status) {
-      return NextResponse.json({ error: data.message }, { status: 502 });
-    }
-
-    await supabase
-      .from("payment_links")
-      .update({ reference: data.data.reference, buyer_email: email })
-      .eq("id", id);
-
-    return NextResponse.json({ url: data.data.authorization_url });
-  }
-
-  if (link.provider === "flutterwave") {
-    const res = await fetch("https://api.flutterwave.com/v3/payments", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${FLUTTERWAVE_SECRET}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tx_ref: `monssel_${id}_${Date.now()}`,
-        amount: amountMain,
-        currency: "NGN",
-        redirect_url: `${APP_URL}/api/verify-payment?link_id=${id}`,
-        customer: { email },
-        meta: { payment_link_id: id },
-        customizations: {
-          title: link.product_name,
-          description: `Payment for ${link.quantity}x ${link.product_name}`,
+        reference,
+        subaccount,
+        // Monssel takes 0% — 100% goes to seller subaccount
+        // Adjust bearer and transaction_charge if you want a platform fee
+        bearer: "subaccount",
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${linkId}/success`,
+        metadata: {
+          link_id: linkId,
+          product_id: link.product_id,
+          product_name: link.product_name,
+          quantity: link.quantity,
+          seller_id: link.user_id,
+          cancel_action: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${linkId}/declined`,
         },
       }),
-    });
+    },
+  );
 
-    const data = await res.json();
-    if (data.status !== "success") {
-      return NextResponse.json({ error: data.message }, { status: 502 });
-    }
+  const paystackData = await paystackRes.json();
 
-    await supabase
-      .from("payment_links")
-      .update({ reference: data.data.tx_ref, buyer_email: email })
-      .eq("id", id);
-
-    return NextResponse.json({ url: data.data.link });
+  if (!paystackData.status) {
+    console.error("[init] Paystack error:", paystackData);
+    return NextResponse.json(
+      { error: paystackData.message ?? "Failed to initialize payment" },
+      { status: 502 },
+    );
   }
 
-  return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
+  // ── 3. Save reference + buyer email to the link ───────────────────────────
+  await supabase
+    .from("payment_links")
+    .update({ reference, buyer_email: email })
+    .eq("id", linkId);
+
+  return NextResponse.json({
+    reference: paystackData.data.reference,
+    amount: amountKobo,
+    subaccount,
+    // authorization_url is used if you want redirect flow instead of popup
+    authorization_url: paystackData.data.authorization_url,
+  });
 }
