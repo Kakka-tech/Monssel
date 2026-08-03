@@ -26,7 +26,7 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const total = link.price * link.quantity;
+  const sellerTotal = link.price * link.quantity;
 
   if (link.status !== "active") {
     return (
@@ -69,10 +69,9 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
       const handler = window.PaystackPop.setup({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
         email,
-        amount: data.amount, // kobo, returned from API
+        amount: data.amount, // buyer total in kobo — same as listed price
         currency: "NGN",
         ref: data.reference,
-        subaccount: data.subaccount,
         onSuccess: () => {
           window.location.href = `/pay/${link.id}/success`;
         },
@@ -129,11 +128,16 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
               <p className="text-sm text-gray-500">Qty: {link.quantity}</p>
             </div>
 
-            <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
-              <span className="text-sm text-gray-500">Total</span>
-              <span className="text-xl font-bold text-gray-900">
-                ₦{total.toLocaleString("en-NG", { minimumFractionDigits: 2 })}
-              </span>
+            <div className="border-t border-gray-100 pt-4 space-y-2">
+              <div className="flex items-center justify-between font-bold text-gray-900">
+                <span>Total</span>
+                <span className="text-xl">
+                  ₦
+                  {sellerTotal.toLocaleString("en-NG", {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -156,8 +160,13 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
               disabled={!email || loading}
               className="w-full bg-black text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-900 transition disabled:opacity-50"
             >
-              {loading ? "Loading…" : `Pay ₦${total.toLocaleString()}`}
+              {loading ? "Loading…" : `Pay ₦${sellerTotal.toLocaleString()}`}
             </button>
+
+            {/* Fee breakdown for seller transparency — hidden from buyer */}
+            <p className="text-center text-xs text-gray-400">
+              No extra charges — you pay exactly ₦{sellerTotal.toLocaleString()}
+            </p>
           </div>
 
           <p className="text-center text-xs text-gray-400">
