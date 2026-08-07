@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
 
@@ -28,6 +29,10 @@ export default function RootLayout({
       <body className={`${inter.variable} ${geistMono.variable} antialiased`}>
         {children}
         <CookieConsent />
+        <Script
+          src="https://js.paystack.co/v1/inline.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
