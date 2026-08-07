@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 declare global {
@@ -24,8 +24,32 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paystackReady, setPaystackReady] = useState(false);
 
   const sellerTotal = link.price * link.quantity;
+
+  // Track real Paystack readiness rather than trusting that
+  // `window.PaystackPop` existing means its internal setup (iframe
+  // messaging channel, etc.) has actually finished. Script's onLoad
+  // only fires once per page load, and this component may mount after
+  // that already happened, so we poll as a fallback.
+  useEffect(() => {
+    if (link.provider !== "paystack") return;
+
+    if (typeof window !== "undefined" && window.PaystackPop) {
+      setPaystackReady(true);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      if (window.PaystackPop) {
+        setPaystackReady(true);
+        clearInterval(interval);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [link.provider]);
 
   if (link.status !== "active") {
     return (
@@ -65,9 +89,9 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
       }
 
       if (link.provider === "paystack") {
-        if (!window.PaystackPop) {
+        if (!window.PaystackPop || !paystackReady) {
           setError(
-            "Payment provider failed to load. Please refresh and try again.",
+            "Payment provider is still loading. Please wait a moment and try again.",
           );
           return;
         }
@@ -78,6 +102,12 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
           amount: data.amount, // buyer total in kobo — same as listed price
           currency: "NGN",
           ref: data.reference,
+          // Required — the webhook reads event.data.metadata.link_id /
+          // seller_id to know which payment link this charge belongs to.
+          // Without this, charge.success events look like "not a
+          // Monssel transaction" and get silently ignored, even though
+          // the payment succeeded.
+          metadata: data.metadata,
           onSuccess: () => {
             window.location.href = `/pay/${link.id}/success`;
           },
@@ -100,6 +130,8 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
       setLoading(false);
     }
   };
+
+  const isPaystackNotReady = link.provider === "paystack" && !paystackReady;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -161,10 +193,14 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
 
           <button
             onClick={handlePay}
-            disabled={!email || loading}
+            disabled={!email || loading || isPaystackNotReady}
             className="w-full bg-black text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-900 transition disabled:opacity-50"
           >
-            {loading ? "Loading…" : `Pay ₦${sellerTotal.toLocaleString()}`}
+            {loading ?
+              "Loading…"
+            : isPaystackNotReady ?
+              "Preparing payment…"
+            : `Pay ₦${sellerTotal.toLocaleString()}`}
           </button>
 
           {/* Fee breakdown for seller transparency — hidden from buyer */}
