@@ -6,12 +6,6 @@ if (!PAYSTACK_SECRET_KEY) {
 
 const PAYSTACK_API = "https://api.paystack.co";
 
-interface PaystackResponse<T> {
-  status: boolean;
-  message: string;
-  data: T;
-}
-
 interface Recipient {
   recipient_code: string;
   name: string;

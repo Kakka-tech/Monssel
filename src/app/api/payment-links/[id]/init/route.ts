@@ -1,22 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-
-const MONSSEL_FEE_RATE = 0.015;
-const PAYSTACK_FEE_RATE = 0.015;
-const PAYSTACK_FEE_CAP = 2000;
-const TRANSFER_FEE = 10;
-
-export function calculateSellerPayout(grossAmount: number): number {
-  const paystackFee = Math.min(
-    Math.round(grossAmount * PAYSTACK_FEE_RATE * 100) / 100,
-    PAYSTACK_FEE_CAP,
-  );
-  const monsselFee = Math.round(grossAmount * MONSSEL_FEE_RATE * 100) / 100;
-  return (
-    Math.round((grossAmount - paystackFee - monsselFee - TRANSFER_FEE) * 100) /
-    100
-  );
-}
+import { calculateSellerPayout } from "@/lib/fees";
 
 export async function POST(
   request: Request,
@@ -55,8 +39,7 @@ export async function POST(
   // as metadata on the Paystack transaction. The webhook depends on
   // link_id + seller_id being present in event.data.metadata — without
   // them it can't tell this charge apart from a random Paystack event
-  // and silently ignores it (which is why sales/stock/notifications
-  // weren't updating even though the payment succeeded).
+  // and silently ignores it.
   return NextResponse.json({
     reference,
     amount: amountKobo,

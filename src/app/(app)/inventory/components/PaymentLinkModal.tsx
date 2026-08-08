@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Copy, Check, Link } from "lucide-react";
 import { Product } from "../types";
+import FeeBreakdownCard from "@/components/FeeBreakdownCard";
 
 interface PaymentLinkModalProps {
   product: Product | null;
@@ -157,12 +158,20 @@ export default function PaymentLinkModal({
               {/* Total */}
               <div className="flex items-center justify-between border-t border-[#ECEDEE] dark:border-[#2E2E2E] pt-3">
                 <span className="text-xs text-[#707375] dark:text-[#A0A0A0]">
-                  Total
+                  Total (what the buyer pays)
                 </span>
                 <span className="text-sm font-semibold text-[#1E1F20] dark:text-white">
                   ₦{total.toLocaleString("en-NG", { minimumFractionDigits: 2 })}
                 </span>
               </div>
+
+              {/* Fee breakdown — shows the seller exactly what they'll
+                  actually receive after Paystack + Monssel fees, so
+                  there's no surprise later and nothing feels hidden. */}
+              <FeeBreakdownCard
+                price={parseFloat(price || "0")}
+                quantity={parseInt(quantity || "1")}
+              />
             </div>
 
             {error && <p className="text-xs text-red-500">{error}</p>}

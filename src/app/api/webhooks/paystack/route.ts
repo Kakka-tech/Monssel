@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { calculateSellerPayout } from "@/lib/fees";
+import {
+  createTransferRecipient,
+  initiateTransfer,
+} from "@/lib/paystack/transfer";
 
+// Use service role key — webhook runs outside user auth context
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -9,833 +15,416 @@ const supabase = createClient(
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY ?? "";
 
-const MONSSEL_FEE_RATE = 0.015;
-const TRANSFER_FEE = 10;
-
-const PAYSTACK_API = "https://api.paystack.co";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface PaystackCustomer {
-  email?: string;
-}
-
-interface PaystackMetadata {
+interface PaystackChargeMetadata {
   link_id?: string;
   product_id?: string;
   product_name?: string;
-  quantity?: number | string;
+  quantity?: string | number;
   seller_id?: string;
 }
 
 interface PaystackChargeData {
-  reference?: string;
-  amount?: number;
-  fees?: number;
-  metadata?: PaystackMetadata;
-  customer?: PaystackCustomer;
+  reference: string;
+  amount: number;
+  metadata?: PaystackChargeMetadata;
+  customer?: { email?: string };
 }
 
 interface PaystackTransferData {
-  reference?: string;
-  transfer_code?: string;
-  failures?: string | null;
-  reason?: string | null;
-}
-
-interface PaystackWebhookEvent {
-  event: string;
-  data: PaystackChargeData | PaystackTransferData;
-}
-
-interface PaystackRecipient {
-  recipient_code: string;
-  active: boolean;
-  name: string;
-  currency: string;
-  details: {
-    account_number: string;
-    account_name: string | null;
-    bank_code: string;
-    bank_name: string;
-  };
-}
-
-interface PaystackTransfer {
   reference: string;
-  amount: number;
-  currency: string;
-  status: string;
-  transfer_code: string;
-  id: number;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PAYSTACK API HELPER
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function paystackRequest<T>(
-  endpoint: string,
-  options: RequestInit = {},
-): Promise<T> {
-  if (!PAYSTACK_SECRET) {
-    throw new Error("PAYSTACK_SECRET_KEY is not configured");
-  }
-
-  const response = await fetch(`${PAYSTACK_API}${endpoint}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${PAYSTACK_SECRET}`,
-      "Content-Type": "application/json",
-      ...(options.headers ?? {}),
-    },
-  });
-
-  const result: {
-    status: boolean;
-    message: string;
-    data: T;
-  } = await response.json();
-
-  if (!response.ok || !result.status) {
-    throw new Error(result.message || "Paystack request failed");
-  }
-
-  return result.data;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// VERIFY PAYSTACK WEBHOOK SIGNATURE
-// ─────────────────────────────────────────────────────────────────────────────
 
 function verifySignature(body: string, signature: string): boolean {
-  if (!PAYSTACK_SECRET || !signature) {
-    return false;
-  }
-
   const hash = crypto
     .createHmac("sha512", PAYSTACK_SECRET)
     .update(body)
     .digest("hex");
-
-  const expected = Buffer.from(hash, "utf8");
-  const received = Buffer.from(signature, "utf8");
-
-  if (expected.length !== received.length) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(expected, received);
+  return hash === signature;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CREATE / GET PAYSTACK RECIPIENT
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function getOrCreateRecipient(sellerId: string): Promise<string> {
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select(
-      `
-        id,
-        full_name,
-        business_name,
-        business_email,
-        paystack_bank_code,
-        paystack_account_number,
-        paystack_recipient_code
-      `,
-    )
-    .eq("id", sellerId)
-    .single();
-
-  if (profileError || !profile) {
-    throw new Error(
-      `Seller profile not found: ${profileError?.message ?? "unknown error"}`,
-    );
-  }
-
-  // Reuse existing recipient.
-  if (profile.paystack_recipient_code) {
-    return profile.paystack_recipient_code;
-  }
-
-  if (!profile.paystack_bank_code || !profile.paystack_account_number) {
-    throw new Error("Seller has not configured a Paystack bank account.");
-  }
-
-  const recipientName =
-    profile.business_name || profile.full_name || "Monssel Seller";
-
-  const recipient = await paystackRequest<PaystackRecipient>(
-    "/transferrecipient",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        type: "nuban",
-        name: recipientName,
-        account_number: profile.paystack_account_number,
-        bank_code: profile.paystack_bank_code,
-        currency: "NGN",
-        email: profile.business_email || undefined,
-      }),
-    },
-  );
-
-  if (!recipient?.recipient_code) {
-    throw new Error("Paystack did not return a recipient code.");
-  }
-
-  const { error: updateError } = await supabase
-    .from("profiles")
-    .update({
-      paystack_recipient_code: recipient.recipient_code,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", sellerId);
-
-  if (updateError) {
-    console.error(
-      "[webhook] Failed to save recipient code:",
-      updateError.message,
-    );
-  }
-
-  return recipient.recipient_code;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INITIATE SELLER TRANSFER
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function initiateSellerTransfer({
-  amount,
-  recipientCode,
-  reference,
-  reason,
-}: {
-  amount: number;
-  recipientCode: string;
-  reference: string;
-  reason: string;
-}): Promise<PaystackTransfer> {
-  return paystackRequest<PaystackTransfer>("/transfer", {
-    method: "POST",
-    body: JSON.stringify({
-      source: "balance",
-      amount: Math.round(amount * 100),
-      recipient: recipientCode,
-      reference,
-      reason,
-      currency: "NGN",
-    }),
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HANDLE CHARGE.SUCCESS
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function handleChargeSuccess(event: PaystackWebhookEvent) {
-  const data = event.data as PaystackChargeData;
-
-  const metadata = data.metadata ?? {};
-
-  const reference = data.reference ?? "";
-
-  const linkId = metadata.link_id ?? "";
-  const productId = metadata.product_id ?? "";
-  const productName = metadata.product_name ?? "";
-  const sellerId = metadata.seller_id ?? "";
-
-  if (!reference || !linkId || !sellerId) {
-    console.log("[webhook] Not a Monssel payment-link transaction — ignoring.");
-
-    return NextResponse.json({
-      received: true,
-    });
-  }
-
-  console.log(`[webhook] charge.success — link=${linkId} ref=${reference}`);
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 1. Get payment link
-  // ─────────────────────────────────────────────────────────────────────────
-
-  const { data: link, error: linkFetchError } = await supabase
-    .from("payment_links")
-    .select("*")
-    .eq("id", linkId)
-    .single();
-
-  if (linkFetchError || !link) {
-    console.error("[webhook] Payment link not found:", linkFetchError?.message);
-
-    return new NextResponse("Payment link not found", {
-      status: 404,
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 2. Idempotency
-  // ─────────────────────────────────────────────────────────────────────────
-
-  if (link.status === "paid") {
-    console.log("[webhook] Payment link already processed — skipping.");
-
-    return NextResponse.json({
-      received: true,
-    });
-  }
-
-  const { data: existingReference } = await supabase
-    .from("payment_links")
-    .select("id, status")
-    .eq("reference", reference)
-    .neq("id", linkId)
-    .maybeSingle();
-
-  if (existingReference) {
-    console.log(
-      "[webhook] Reference already belongs to another payment link — skipping.",
-    );
-
-    return NextResponse.json({
-      received: true,
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 3. Verify amount
-  // ─────────────────────────────────────────────────────────────────────────
-
-  const expectedAmountKobo = Math.round(
-    Number(link.price) * Number(link.quantity) * 100,
-  );
-
-  const paidAmountKobo = Number(data.amount ?? 0);
-
-  if (
-    !Number.isFinite(paidAmountKobo) ||
-    paidAmountKobo !== expectedAmountKobo
-  ) {
-    console.error(
-      `[webhook] Amount mismatch. Expected ${expectedAmountKobo}, received ${paidAmountKobo}`,
-    );
-
-    return new NextResponse("Amount mismatch", {
-      status: 400,
-    });
-  }
-
-  const total = paidAmountKobo / 100;
-
-  const pricePerUnit = total / Number(link.quantity);
-
-  const buyerEmail = data.customer?.email ?? "";
-
-  // Paystack's actual transaction fee.
-  const paystackFee = typeof data.fees === "number" ? data.fees / 100 : 0;
-
-  // Monssel's 1.5% platform fee.
-  const monsselFee = Math.round(total * MONSSEL_FEE_RATE * 100) / 100;
-
-  // Seller receives:
-  // Gross - Paystack fee - Monssel fee - transfer fee.
-  const sellerPayout =
-    Math.round((total - paystackFee - monsselFee - TRANSFER_FEE) * 100) / 100;
-
-  if (sellerPayout <= 0) {
-    console.error(
-      `[webhook] Calculated seller payout is invalid: ${sellerPayout}`,
-    );
-
-    return new NextResponse("Invalid payout amount", {
-      status: 400,
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 4. Claim payment link
-  //
-  // active -> paid can only happen once.
-  // This protects against duplicate charge.success webhooks.
-  // ─────────────────────────────────────────────────────────────────────────
-
-  const { data: claimedLink, error: claimError } = await supabase
-    .from("payment_links")
-    .update({
-      status: "paid",
-      reference,
-      paystack_reference: reference,
-      buyer_email: buyerEmail,
-      paid_at: new Date().toISOString(),
-    })
-    .eq("id", linkId)
-    .eq("status", "active")
-    .select()
-    .maybeSingle();
-
-  if (claimError) {
-    console.error(
-      "[webhook] Failed to claim payment link:",
-      claimError.message,
-    );
-
-    return new NextResponse("DB error", {
-      status: 500,
-    });
-  }
-
-  if (!claimedLink) {
-    console.log(
-      "[webhook] Payment link was already claimed by another webhook.",
-    );
-
-    return NextResponse.json({
-      received: true,
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 5. Record sale
-  // ─────────────────────────────────────────────────────────────────────────
-
-  const { data: sale, error: saleError } = await supabase
-    .from("sales")
-    .insert({
-      user_id: sellerId,
-      product_id: productId || null,
-      product_name: productName || link.product_name,
-      quantity: Number(link.quantity),
-      price: pricePerUnit,
-      total,
-      note: `Online sale via Monssel Pay — ${buyerEmail}`,
-    })
-    .select("id")
-    .single();
-
-  if (saleError || !sale) {
-    console.error("[webhook] Failed to record sale:", saleError?.message);
-
-    return new NextResponse("Sale recording failed", {
-      status: 500,
-    });
-  }
-
-  console.log(`[webhook] Sale recorded — sale=${sale.id}`);
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 6. Update stock
-  // ─────────────────────────────────────────────────────────────────────────
-
-  if (productId) {
-    const { data: product, error: productError } = await supabase
-      .from("products")
-      .select("stock, low_stock_threshold, name")
-      .eq("id", productId)
-      .eq("user_id", sellerId)
-      .single();
-
-    if (productError) {
-      console.error("[webhook] Failed to get product:", productError.message);
-    }
-
-    if (product) {
-      const newStock = Math.max(
-        0,
-        Number(product.stock) - Number(link.quantity),
-      );
-
-      const { error: stockError } = await supabase
-        .from("products")
-        .update({
-          stock: newStock,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", productId);
-
-      if (stockError) {
-        console.error("[webhook] Failed to update stock:", stockError.message);
-      }
-
-      // Stock movement.
-      const { error: movementError } = await supabase
-        .from("stock_movements")
-        .insert({
-          user_id: sellerId,
-          product_id: productId,
-          type: "sale",
-          quantity: -Number(link.quantity),
-          note: `Sold via Monssel Pay — ref: ${reference}`,
-        });
-
-      if (movementError) {
-        console.error(
-          "[webhook] Failed to record stock movement:",
-          movementError.message,
-        );
-      }
-
-      // Sale notification.
-      await supabase.from("notifications").insert({
-        user_id: sellerId,
-        type: "sale",
-        title: "New sale 🎉",
-        message: `${link.quantity}x ${
-          productName || product.name
-        } sold for ₦${total.toLocaleString("en-NG")} via payment link.`,
-      });
-
-      // Low stock notification.
-      if (newStock <= Number(product.low_stock_threshold) && newStock > 0) {
-        await supabase.from("notifications").insert({
-          user_id: sellerId,
-          type: "stock",
-          title: "Low stock alert",
-          message: `${
-            productName || product.name
-          } is running low — only ${newStock} left in stock.`,
-        });
-      }
-
-      // Out of stock notification.
-      if (newStock === 0) {
-        await supabase.from("notifications").insert({
-          user_id: sellerId,
-          type: "stock",
-          title: "Out of stock",
-          message: `${
-            productName || product.name
-          } is now out of stock. Restock to keep selling.`,
-        });
-      }
-    }
-  } else {
-    // Service/custom payment link.
-    await supabase.from("notifications").insert({
-      user_id: sellerId,
-      type: "sale",
-      title: "New sale 🎉",
-      message: `Payment of ₦${total.toLocaleString("en-NG")} received for ${
-        productName || link.product_name
-      }.`,
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 7. Create payout record
-  // ─────────────────────────────────────────────────────────────────────────
-
-  const payoutReference = `ms_payout_${linkId.replace(/-/g, "")}`;
-
-  const { data: existingPayout } = await supabase
-    .from("payouts")
-    .select("id, status, reference")
-    .eq("payment_link_id", linkId)
-    .maybeSingle();
-
-  if (existingPayout) {
-    console.log(
-      "[webhook] Payout already exists — skipping transfer creation.",
-    );
-
-    return NextResponse.json({
-      received: true,
-    });
-  }
-
-  const { data: payout, error: payoutError } = await supabase
-    .from("payouts")
-    .insert({
-      seller_id: sellerId,
-      payment_link_id: linkId,
-      sale_id: sale.id,
-      amount: sellerPayout,
-      currency: "NGN",
-      monssel_fee: monsselFee,
-      paystack_fee: paystackFee,
-      transfer_fee: TRANSFER_FEE,
-      status: "pending",
-      reference: payoutReference,
-    })
-    .select("id, reference")
-    .single();
-
-  if (payoutError || !payout) {
-    console.error(
-      "[webhook] Failed to create payout record:",
-      payoutError?.message,
-    );
-
-    return new NextResponse("Payout record failed", {
-      status: 500,
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 8. Get/create Paystack recipient
-  // ─────────────────────────────────────────────────────────────────────────
-
-  let recipientCode: string;
-
-  try {
-    recipientCode = await getOrCreateRecipient(sellerId);
-  } catch (error) {
-    const message =
-      error instanceof Error ?
-        error.message
-      : "Failed to create Paystack recipient";
-
-    console.error("[webhook] Recipient error:", message);
-
-    await supabase
-      .from("payouts")
-      .update({
-        status: "failed",
-        failure_reason: message,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", payout.id);
-
-    return new NextResponse("Recipient setup failed", {
-      status: 500,
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 9. Initiate Paystack transfer
-  // ─────────────────────────────────────────────────────────────────────────
-
-  try {
-    const transfer = await initiateSellerTransfer({
-      amount: sellerPayout,
-      recipientCode,
-      reference: payout.reference,
-      reason: `Monssel payout for sale ${sale.id}`,
-    });
-
-    const transferStatus =
-      transfer.status === "success" ? "success"
-      : transfer.status === "otp" ? "pending"
-      : "processing";
-
-    await supabase
-      .from("payouts")
-      .update({
-        status: transferStatus,
-        transfer_code: transfer.transfer_code,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", payout.id);
-
-    console.log(
-      `[webhook] Transfer initiated — payout=${payout.id} transfer=${transfer.transfer_code} status=${transfer.status}`,
-    );
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Paystack transfer failed";
-
-    console.error("[webhook] Failed to initiate seller transfer:", message);
-
-    await supabase
-      .from("payouts")
-      .update({
-        status: "failed",
-        failure_reason: message,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", payout.id);
-
-    // Do not automatically retry here.
-    // A retry must use the same transfer reference
-    // to avoid accidentally creating duplicate transfers.
-  }
-
-  console.log(
-    `[webhook] Done — payment=${reference} sale=${sale.id} payout=${payout.id}`,
-  );
-
-  return NextResponse.json({
-    received: true,
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HANDLE TRANSFER WEBHOOKS
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function handleTransferEvent(
-  eventName: string,
-  data: PaystackTransferData,
-) {
-  const reference = data.reference ?? "";
-
-  const transferCode = data.transfer_code ?? "";
-
-  if (!reference) {
-    console.warn(`[webhook] ${eventName} without transfer reference.`);
-
-    return NextResponse.json({
-      received: true,
-    });
-  }
-
-  const { data: payout, error } = await supabase
-    .from("payouts")
-    .select("id, status")
-    .eq("reference", reference)
-    .maybeSingle();
-
-  if (error) {
-    console.error("[webhook] Failed to find payout:", error.message);
-
-    return new NextResponse("DB error", {
-      status: 500,
-    });
-  }
-
-  if (!payout) {
-    console.warn(
-      `[webhook] No Monssel payout found for transfer ${reference}.`,
-    );
-
-    return NextResponse.json({
-      received: true,
-    });
-  }
-
-  let status: "pending" | "processing" | "success" | "failed" | "reversed";
-
-  switch (eventName) {
-    case "transfer.success":
-      status = "success";
-      break;
-
-    case "transfer.failed":
-      status = "failed";
-      break;
-
-    case "transfer.reversed":
-      status = "reversed";
-      break;
-
-    default:
-      return NextResponse.json({
-        received: true,
-      });
-  }
-
-  const failureReason = data.failures ?? data.reason ?? null;
-
-  const { error: updateError } = await supabase
-    .from("payouts")
-    .update({
-      status,
-      transfer_code: transferCode || undefined,
-      failure_reason: status === "success" ? null : failureReason,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", payout.id);
-
-  if (updateError) {
-    console.error(
-      `[webhook] Failed to update payout ${payout.id}:`,
-      updateError.message,
-    );
-
-    return new NextResponse("DB error", {
-      status: 500,
-    });
-  }
-
-  console.log(`[webhook] ${eventName} — payout=${payout.id} ref=${reference}`);
-
-  return NextResponse.json({
-    received: true,
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN WEBHOOK
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
-
   const signature = request.headers.get("x-paystack-signature") ?? "";
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // 1. Verify signature
-  // ─────────────────────────────────────────────────────────────────────────
-
   if (!verifySignature(rawBody, signature)) {
-    console.warn("[webhook] Invalid Paystack signature — ignoring.");
-
-    return new NextResponse("Unauthorized", {
-      status: 401,
-    });
+    console.warn("[webhook] Invalid signature — ignoring");
+    return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // 2. Parse event
-  // ─────────────────────────────────────────────────────────────────────────
-
-  let parsedEvent: unknown;
-
-  try {
-    parsedEvent = JSON.parse(rawBody);
-  } catch {
-    return new NextResponse("Invalid JSON", {
-      status: 400,
-    });
-  }
-
-  if (
-    typeof parsedEvent !== "object" ||
-    parsedEvent === null ||
-    !("event" in parsedEvent) ||
-    typeof parsedEvent.event !== "string" ||
-    !("data" in parsedEvent)
-  ) {
-    return new NextResponse("Invalid webhook payload", {
-      status: 400,
-    });
-  }
-
-  const event = parsedEvent as PaystackWebhookEvent;
-
-  console.log(`[webhook] Received event: ${event.event}`);
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 3. Successful payment
-  // ─────────────────────────────────────────────────────────────────────────
+  const event: {
+    event: string;
+    data: PaystackChargeData | PaystackTransferData;
+  } = JSON.parse(rawBody);
 
   if (event.event === "charge.success") {
-    return handleChargeSuccess(event);
+    return handleChargeSuccess(event.data as PaystackChargeData);
   }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 4. Transfer lifecycle
-  // ─────────────────────────────────────────────────────────────────────────
 
   if (
     event.event === "transfer.success" ||
     event.event === "transfer.failed" ||
     event.event === "transfer.reversed"
   ) {
-    const transferData = event.data as PaystackTransferData;
-
-    return handleTransferEvent(event.event, transferData);
+    return handleTransferStatus(
+      event.event,
+      event.data as PaystackTransferData,
+    );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // 5. Ignore events we don't currently need
-  // ─────────────────────────────────────────────────────────────────────────
+  return NextResponse.json({ received: true });
+}
 
-  return NextResponse.json({
-    received: true,
+async function handleChargeSuccess(data: PaystackChargeData) {
+  const reference: string = data.reference ?? "";
+  const metadata = data.metadata ?? {};
+
+  const link_id: string = metadata.link_id ?? "";
+  const product_id: string = metadata.product_id ?? "";
+  const product_name: string = metadata.product_name ?? "";
+  const quantity: number = Number(metadata.quantity ?? 1);
+  const seller_id: string = metadata.seller_id ?? "";
+
+  if (!link_id || !seller_id) {
+    return NextResponse.json({ received: true });
+  }
+
+  console.log(`[webhook] charge.success — link=${link_id} ref=${reference}`);
+
+  const { data: existingLink } = await supabase
+    .from("payment_links")
+    .select("status")
+    .eq("id", link_id)
+    .single();
+
+  if (existingLink?.status === "paid") {
+    console.log("[webhook] Already processed — skipping");
+    return NextResponse.json({ received: true });
+  }
+
+  const grossTotal = Number(data.amount) / 100;
+  const netPayout = calculateSellerPayout(grossTotal);
+  const pricePerUnit = Math.round((netPayout / quantity) * 100) / 100;
+  const buyerEmail: string = data.customer?.email ?? "";
+
+  const { error: linkErr } = await supabase
+    .from("payment_links")
+    .update({
+      status: "paid",
+      reference,
+      buyer_email: buyerEmail,
+      paid_at: new Date().toISOString(),
+    })
+    .eq("id", link_id);
+
+  if (linkErr) {
+    console.error("[webhook] Failed to update payment link:", linkErr.message);
+    return new NextResponse("DB error", { status: 500 });
+  }
+
+  const { error: saleErr } = await supabase.from("sales").insert({
+    user_id: seller_id,
+    product_id: product_id || null,
+    product_name,
+    quantity,
+    price: pricePerUnit,
+    total: netPayout,
+    note: `Online sale via Monssel Pay — ${buyerEmail} (buyer paid ₦${grossTotal.toLocaleString()})`,
   });
+
+  if (saleErr) {
+    console.error("[webhook] Failed to record sale:", saleErr.message);
+  }
+
+  if (product_id) {
+    const { data: product } = await supabase
+      .from("products")
+      .select("stock, low_stock_threshold, name")
+      .eq("id", product_id)
+      .single();
+
+    if (product) {
+      const newStock = Math.max(0, product.stock - quantity);
+
+      await supabase
+        .from("products")
+        .update({ stock: newStock })
+        .eq("id", product_id);
+
+      await supabase.from("stock_movements").insert({
+        user_id: seller_id,
+        product_id,
+        type: "sale",
+        quantity: -quantity,
+        note: `Sold via Monssel Pay — ref: ${reference}`,
+      });
+
+      await supabase.from("notifications").insert({
+        user_id: seller_id,
+        type: "sale",
+        title: "New sale 🎉",
+        message: `${quantity}x ${product_name} sold — ₦${netPayout.toLocaleString()} sent to your account.`,
+      });
+
+      if (newStock <= product.low_stock_threshold && newStock > 0) {
+        await supabase.from("notifications").insert({
+          user_id: seller_id,
+          type: "stock",
+          title: "Low stock alert",
+          message: `${product_name} is running low — only ${newStock} left in stock.`,
+        });
+      }
+
+      if (newStock === 0) {
+        await supabase.from("notifications").insert({
+          user_id: seller_id,
+          type: "stock",
+          title: "Out of stock",
+          message: `${product_name} is now out of stock. Restock to keep selling.`,
+        });
+      }
+    }
+  } else {
+    await supabase.from("notifications").insert({
+      user_id: seller_id,
+      type: "sale",
+      title: "New sale 🎉",
+      message: `₦${netPayout.toLocaleString()} sent to your account for ${product_name}.`,
+    });
+  }
+
+  console.log(`[webhook] Sale recorded, stock updated, seller notified`);
+
+  await triggerPayout({
+    sellerId: seller_id,
+    saleReference: reference,
+    payoutAmount: netPayout,
+  });
+
+  return NextResponse.json({ received: true });
+}
+
+/**
+ * Gets a cached recipient code for this seller, or creates one via
+ * createTransferRecipient and caches it on their profile. Recipient
+ * codes are reusable across transfers, so we only want to create one
+ * the first time a given seller gets paid out.
+ */
+async function getOrCreateRecipientCode(seller: {
+  id: string;
+  business_name: string | null;
+  full_name: string | null;
+  email: string | null;
+  paystack_account_number: string | null;
+  paystack_bank_code: string | null;
+  paystack_recipient_code: string | null;
+}): Promise<{ recipientCode: string | null; error: string | null }> {
+  if (seller.paystack_recipient_code) {
+    return { recipientCode: seller.paystack_recipient_code, error: null };
+  }
+
+  if (!seller.paystack_account_number || !seller.paystack_bank_code) {
+    return {
+      recipientCode: null,
+      error: "Seller has no bank account connected",
+    };
+  }
+
+  try {
+    const recipient = await createTransferRecipient({
+      name: seller.business_name || seller.full_name || "Monssel Seller",
+      accountNumber: seller.paystack_account_number,
+      bankCode: seller.paystack_bank_code,
+      email: seller.email ?? undefined,
+    });
+
+    await supabase
+      .from("profiles")
+      .update({ paystack_recipient_code: recipient.recipient_code })
+      .eq("id", seller.id);
+
+    return { recipientCode: recipient.recipient_code, error: null };
+  } catch (err) {
+    return {
+      recipientCode: null,
+      error:
+        err instanceof Error ?
+          err.message
+        : "Failed to create transfer recipient",
+    };
+  }
+}
+
+async function triggerPayout({
+  sellerId,
+  saleReference,
+  payoutAmount,
+}: {
+  sellerId: string;
+  saleReference: string;
+  payoutAmount: number;
+}) {
+  if (payoutAmount <= 0) {
+    console.warn(
+      `[payout] Computed payout <= 0 for ref=${saleReference}, skipping`,
+    );
+    return;
+  }
+
+  const { data: seller, error: sellerErr } = await supabase
+    .from("profiles")
+    .select(
+      "id, email, business_name, full_name, paystack_account_number, paystack_bank_code, paystack_recipient_code",
+    )
+    .eq("id", sellerId)
+    .single();
+
+  if (sellerErr || !seller) {
+    console.error(
+      `[payout] Could not load seller ${sellerId}:`,
+      sellerErr?.message,
+    );
+    return;
+  }
+
+  const { recipientCode, error: recipientErr } =
+    await getOrCreateRecipientCode(seller);
+
+  if (!recipientCode) {
+    console.error(
+      `[payout] Recipient error for seller ${sellerId}:`,
+      recipientErr,
+    );
+    await supabase.from("notifications").insert({
+      user_id: sellerId,
+      type: "payout",
+      title: "Payout couldn't be sent",
+      message: `We couldn't send your payout for ₦${payoutAmount.toLocaleString()} — please check your connected bank account.`,
+    });
+    return;
+  }
+
+  const transferReference = `payout_${saleReference}`;
+
+  const { data: existingPayout } = await supabase
+    .from("payouts")
+    .select("id")
+    .eq("transfer_reference", transferReference)
+    .maybeSingle();
+
+  if (existingPayout) {
+    console.log(`[payout] Already attempted for ${saleReference}, skipping`);
+    return;
+  }
+
+  try {
+    // NOTE: initiateTransfer expects amount in NAIRA (it converts to
+    // kobo internally), unlike the rest of this codebase which mostly
+    // works in kobo. Passing payoutAmount directly here, not *100.
+    const transfer = await initiateTransfer({
+      amount: payoutAmount,
+      recipientCode,
+      reference: transferReference,
+      reason: `Monssel sale payout — ${saleReference}`,
+    });
+
+    await supabase.from("payouts").insert({
+      user_id: sellerId,
+      sale_reference: saleReference,
+      transfer_reference: transferReference,
+      transfer_code: transfer.transfer_code,
+      amount: payoutAmount,
+      status: transfer.status === "success" ? "success" : "pending",
+    });
+
+    console.log(
+      `[payout] Transfer initiated for ${saleReference} — status=${transfer.status}`,
+    );
+
+    if (transfer.status === "success") {
+      await supabase.from("notifications").insert({
+        user_id: sellerId,
+        type: "payout",
+        title: "Payout sent 💸",
+        message: `₦${payoutAmount.toLocaleString()} has been sent to your bank account.`,
+      });
+    }
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Transfer failed to initiate";
+
+    await supabase.from("payouts").insert({
+      user_id: sellerId,
+      sale_reference: saleReference,
+      transfer_reference: transferReference,
+      amount: payoutAmount,
+      status: "failed",
+      failure_reason: message,
+    });
+
+    console.error(
+      `[payout] Transfer initiation failed for ${saleReference}:`,
+      message,
+    );
+
+    await supabase.from("notifications").insert({
+      user_id: sellerId,
+      type: "payout",
+      title: "Payout failed",
+      message: `Your payout of ₦${payoutAmount.toLocaleString()} couldn't be sent. We'll retry — contact support if this continues.`,
+    });
+  }
+}
+
+async function handleTransferStatus(
+  eventType: string,
+  data: PaystackTransferData,
+) {
+  const transferReference: string = data.reference ?? "";
+
+  if (!transferReference) {
+    return NextResponse.json({ received: true });
+  }
+
+  const { data: payout } = await supabase
+    .from("payouts")
+    .select("id, user_id, amount, status")
+    .eq("transfer_reference", transferReference)
+    .single();
+
+  if (!payout || payout.status === "success") {
+    return NextResponse.json({ received: true });
+  }
+
+  const newStatus =
+    eventType === "transfer.success" ? "success"
+    : eventType === "transfer.reversed" ? "reversed"
+    : "failed";
+
+  await supabase
+    .from("payouts")
+    .update({ status: newStatus, updated_at: new Date().toISOString() })
+    .eq("id", payout.id);
+
+  if (newStatus === "success") {
+    await supabase.from("notifications").insert({
+      user_id: payout.user_id,
+      type: "payout",
+      title: "Payout sent 💸",
+      message: `₦${Number(payout.amount).toLocaleString()} has been sent to your bank account.`,
+    });
+  } else {
+    await supabase.from("notifications").insert({
+      user_id: payout.user_id,
+      type: "payout",
+      title: newStatus === "reversed" ? "Payout reversed" : "Payout failed",
+      message: `Your payout of ₦${Number(payout.amount).toLocaleString()} ${
+        newStatus === "reversed" ? "was reversed" : "failed"
+      }. We'll look into it — contact support if this continues.`,
+    });
+  }
+
+  console.log(
+    `[webhook] ${eventType} — payout ${payout.id} marked ${newStatus}`,
+  );
+  return NextResponse.json({ received: true });
 }
