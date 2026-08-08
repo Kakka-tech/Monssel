@@ -139,7 +139,7 @@ export default function BuyerCheckout({ link }: { link: PaymentLink }) {
         <div className="text-center">
           <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mx-auto mb-3">
             <Image
-              src="/Icons/logo-dark.png"
+              src="/Icons/logo.png"
               alt="Monssel"
               width={32}
               height={32}
